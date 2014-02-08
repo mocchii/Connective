@@ -1,0 +1,128 @@
+<html>
+  <head>
+    <title>Node.js Testing</title>
+    <!-- JQuery and JQueryUI scripts, for autocomplete use -->
+    <script src="http://code.jquery.com/jquery-latest.js" type="text/javascript"></script>
+    <script src="./js/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
+    
+    <!-- JQueryUI styles for autocomplete use -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="http://jqueryui.com/resources/demos/style.css" />
+    
+    <!-- Code to get the course listings and supply them to the autocomplete boxes. Only grabs them ONCE when the page loads,
+         then applies that cached data to any autocomplete elements on the page. -->
+    <script type="text/javascript">
+      $(function() {
+        var departments, courses, sections, coursesById;
+        coursesById=[];
+        $(".courser").val("Loading course list...").attr("disabled", true); // Disable course-list boxes while loading from YACs.
+        $(".depts").val("Loading department list...").attr("disabled", true); // Disable department-list boxes while loading from YACs.
+        $(".sections").val("Loading section list...").attr("disabled", true); // Disable department-list boxes while loading from YACs.
+        
+         /* Grab department listing from YACS using our Node.js setup */
+        $.get("/departments/all", function(data) {
+          var res=data.result;
+          
+          /* Copy some information into the "label" and "value" fields, for the autocomplete plugin to register them */
+          for (dept in res) {
+            res[dept].label=res[dept].name;
+            res[dept].value=res[dept].id;
+          }
+          departments=res;
+          $(".depts").val("").attr("disabled", false); // Clear and re-enable course list boxes
+          $(".depts").attr("placeholder", "Enter a department ID or search by department name");
+          
+          /* Make all input boxes with class ".courser" into autocomplete Course Listing boxes using that resulting list */
+          $(".depts").autocomplete({
+            source: function(req, response) { 
+
+              /* Make a pattern out of whatever the person typed */
+              var re = $.ui.autocomplete.escapeRegex(req.term); 
+      
+              /* The ^ in a Regular Expression pattern means "at the beginning of the text" */
+              var matcher = new RegExp( "^" + re, "i" ); 
+          
+              /* Respond with only those courses whose names START with the typed pattern */
+              response($.grep(departments, function(dept){ 
+                  return matcher.test(dept.label);
+              }) ); 
+            }
+          })
+        });
+        
+        /* Same thing but for courses. This uses $.ajax instead so we can make it non-async, this way it must load the courses before the sections
+           try to use the data for their names */
+        $.ajax({url: "/courses/all", async: false, success: function(data) {
+          var res=data.result;
+          
+          /* Copy some information into the "label" and "value" fields, for the autocomplete plugin to register them */
+          for (course in res) {
+            res[course].label=res[course].name;
+            res[course].value=res[course].id;
+            coursesById[res[course].id]=res[course];
+          }
+          courses=res;
+          $(".courser").val("").attr("disabled", false); // Clear and re-enable course list boxes
+          $(".courser").attr("placeholder", "Enter a course ID or search by course name");
+          
+          /* Make all input boxes with class ".courser" into autocomplete Course Listing boxes using that resulting list */
+          $(".courser").autocomplete({
+            source: function(req, response) { 
+
+              /* Make a pattern out of whatever the person typed */
+              var re = $.ui.autocomplete.escapeRegex(req.term); 
+      
+              /* The ^ in a Regular Expression pattern means "at the beginning of the text" */
+              var matcher = new RegExp( "^" + re, "i" ); 
+          
+              /* Respond with only those courses whose names START with the typed pattern */
+              response($.grep(courses, function(course){ 
+                  return matcher.test(course.label);
+              }) ); 
+            }
+          })
+        }});
+
+        /* Same kind of thing, but for section listings */
+        $.get("/sections/all", function(data) {
+          var res=data.result;
+          
+          /* Copy some information into the "label" and "value" fields, for the autocomplete plugin to register them */
+          for (sec in res) {
+            var course={name:""};
+            res[sec].label=coursesById[res[sec].course_id].name+" - "+res[sec].number;
+            res[sec].value=res[sec].id;
+          }
+          sections=res;
+          $(".sections").val("").attr("disabled", false); // Clear and re-enable course list boxes
+          $(".sections").attr("placeholder", "Enter a section ID or search by course name");
+          
+          /* Make all input boxes with class ".courser" into autocomplete Course Listing boxes using that resulting list */
+          $(".sections").autocomplete({
+            source: function(req, response) { 
+
+              /* Make a pattern out of whatever the person typed */
+              var re = $.ui.autocomplete.escapeRegex(req.term); 
+      
+              /* The ^ in a Regular Expression pattern means "at the beginning of the text" */
+              var matcher = new RegExp( "^" + re, "i" ); 
+          
+              /* Respond with only those courses whose names START with the typed pattern */
+              response($.grep(sections, function(sec){ 
+                  return matcher.test(sec.label);
+              }) ); 
+            }
+          })
+        });
+      });
+    </script>
+    
+  </head>
+  <body>
+    <form name="courseForm">
+      <input type="text" class="courser" size="42" name="course" />
+      <input type="text" class="depts" size="42" name="department" />
+      <input type="text" class="sections" size="42" name="section" />
+    </form>
+  </body>
+</html>

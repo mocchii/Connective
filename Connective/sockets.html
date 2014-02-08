@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>Node.js Testing</title>
+    <script src="http://code.jquery.com/jquery-latest.js" type="text/javascript"></script>
+    <script src="socket.io/socket.io.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(function() {
+        var socket=io.connect();
+        var form=$("#messageForm"),
+            mess=$("#message"),
+            area=$("#chatArea"),
+            uname=$("#uname");
+        
+        form.submit(function(event) {
+          event.preventDefault();
+          socket.emit("sending", {name: uname.val(), message: mess.val()});
+          mess.val("");
+        });
+        
+        socket.on("receiving", function(data) {
+          area.append("<b>"+data.name+":</b> "+data.message+"<br />");
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    I'm testing the Node.js stuff!
+    <div id="chatArea"></div>
+    <form name="message" id="messageForm">
+      <input type="text" name="name" id="uname" />
+      <input type="text" name="message" id="message" />
+      <input type="submit" value="Send" />
+    </form>
+  </body>
+</html>
