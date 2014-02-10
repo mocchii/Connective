@@ -1,7 +1,7 @@
 var http=require("http");
 var fs=require("fs"); // Include filesystem manipulation, so we can read/write files for cacheing.
 
-/* The getCourses() function takes a callback function which is passed the resulting JSON from YACS. */
+/* The getCourses()  function takes a callback function which is passed the resulting JSON from YACS. */
 function getCourses(callback) {
 
   /* First, check if the cached file is older than 1 week. If not, just use that data. */
