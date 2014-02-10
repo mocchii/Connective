@@ -1,0 +1,401 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>P2P</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <script type="text/javascript" src="js/angular.min.js"></script>
+  <script type="text/javascript" src="js/angular-resource.min.js"></script> -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" >
+  <link rel="stylesheet" type="text/css" href="/test.css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <!-- <link rel="stylesheet" type="text/css" href="bootstrap/dist/css/bootstrap-responsive.min.css" /> -->
+   <style>
+    #chat{
+       height:500px;
+    }
+    .form-control{
+       margin:5px 0px 5px 0px;
+    }
+    .btn{
+       margin:5px 0px 5px 0px;
+     }
+  </style>
+</head>
+<body>
+
+  <!-- <div id="createOrLoginWrap">
+    <p>Login:</p>
+    <form id="setUsername">
+      <input size="35" id="username"></input>
+      <input class="btn" type="submit"></input>
+  </div> -->
+  <div id="createOrLoginWrap" class="row">
+  <div class="col-md-5">
+    <p style="margin:40px">Find other loners who couldn't find friends to study with without the help of the internet</p>
+  </div>
+
+  <div class="col-md-5" style="margin:50px">
+  <div class="input-group">
+    <input id="loginUsername" type="text" class="form-control" placeholder="Username">
+    <input id="loginPassword" type="password" class="form-control" placeholder="Password">
+    <button id="loginButton" type="button" class="btn btn-default">Log in</button>
+    <p id="loginError"></p>
+    <!-- <input type="submit">Log in</input> -->
+  </div>
+  <br/>
+  <p style="font-size:150%;color:#003399">New to the site? Create an account!</p>
+  <div class="input-group">
+    <input id="signupUsername" type="text" class="form-control" placeholder="Username"> 
+    <input id="signupEmail" type="text" class="form-control" placeholder="email (used to notify you when someone messages you)">
+    <input id="signupPassword" type="password" class="form-control" placeholder="Password">
+    <p style="margin:20px 0px 0px 0px;font-size:125%">Classes</p>
+    <!-- <select class="form-control">
+      <option value="none">Select a subject</option>
+      <option value="engineering">
+      Engineering
+      </option>
+      <option value="basket-weaving">Basket-weaving</option>
+    </select>
+    <select class="form-control">
+      <option value="none">Select a class</option>
+    </select> -->
+    
+    <!-- <p>description for class 1</p> -->
+    <!-- <label for="description1">description</p> -->
+     
+    <!-- <textarea id="description1" rows="3" class="form-control" placeholder="What are you looking for in a study buddy, how confident are you with the material of this class, etc."></textarea>
+    
+    <!-- <textarea id="signupDescription" rows="4" class="form-control" placeholder="Tell people a little bit about yourself! The type of wisdom you have to offer, the kind of help you're looking for, etc. This can be edited later"></textarea> -->
+    <!-- <div class="checkbox">
+      <label>
+	<input id="signupWantsHelp" type="checkbox" checked>I'm looking for help</input>
+	<!-- <input type="checkbox" checked>I'm looking to help</input> -->
+     <!-- </label>
+    </div>
+    <div class="checkbox">
+      <label>
+	<input id="signupWantsToHelp" type="checkbox" checked>I'm looking to help</input>
+      </label>
+    </div> -->
+    
+    <!-- <select>
+      <option>Neither penis nor vagina</option>
+      <option> -->
+
+    <p>Add a class you want a buddy in! (please use one of the suggestions from the dropdown so we know exactly what class you're talking about) </p>
+    <form id="classNameInput">
+      <!-- <label for="classes">Add a class you want a buddy for: </label> -->
+      <input id="classes">
+      <button>Add class</button>
+    </form>
+    <div id="descriptions">
+      
+    </div>
+    <!-- <button id="addClassButton" type="button">
+      Add a class
+    </button> -->
+    
+    <div>
+      <button id="signupButton" type="button" class="pull-left btn btn-default" >Sign up!</button>
+      <p id="signupError"></p>
+    </div>
+  </div>
+  </div>
+
+  </div>
+
+  <div id="navbar" class="navbar navbar-default" style="display:none" role="navigation">
+    <div type="button" class="collapse navbar-collapse pull-right" id="navbarCollapse1">
+      <ul class="nav navbar-nav .navbar-right">
+	<li><a href="/about.html">about</a></li>
+	<li class="active"><a href="#jfk">Thing 1</a></li>
+	<li class=".navbar-right"><a href="#">Thing 2</a></li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div id="mainArea" style="display:none">
+  <table><tr><td>
+     <div>
+     <ul id="placeToPutPeople" class="list-group" style="width:300px;height:500px;overflow:scroll"><!-- use pull-left in class?-->
+       <!-- <li class="list-group-item">First fucking thing</li>
+      <li class="list-group-item">
+	<p>blahbity blah</p> <p>blah fkjdslafj kjflds ;akjf kjfds kjfdla kjfds fkjds jkfdsjflds jfskdl kdsl</p><button id="chatWithUser2" type="button" class="btn btn-default">Message</button>
+      </li> -->
+      
+    </ul></td><td valign="bottom">
+    </div>
+    <!-- can't do multiline options. Arg! <select style="width:200px" multiple class="form-control">
+      <option>Can I put a big fucking thing here?jfkds;lajf alkjfd; a lkdsa;jf kjfds;la jfdsakjfkdsljf jflkds ds
+ jdsl fklds jkjfdsl jfksl fdskjf lkjfds lsjfkdsl fjdslk jfdslk jfdslkjf sldkf ds</option>
+      <option>2</option>
+    </select>-->
+    <div id="chatArea" style="display:none;float:bottom">
+      <!-- <div class="btn-group">
+	<button type="button" class="btn btn-default">Left</button>
+      </div> -->
+      <div id="chat" style="border: 2px blue"></div>
+      <form id="send-message">
+	<input size="35" id="messageBox">
+	<input type="submit">
+      </form>
+    </div>
+  </td></tr></table>
+  </div>
+
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+  <script>
+     //jQuery(function($){
+     //(function() {
+     $(document).ready(function(){
+       //console.log("I bet this fucking prints, but the next thing doesn't");
+
+       var classListings = [];       
+
+       /*$.getJSON(
+            //"http://yacs.me/api/4/courses.json",
+            "courses.json",
+           function(coursesData){
+              //console.log("got the data, beotch");
+              //alert("FUCK");
+              $.getJSON("semesters.json",function(semestersData){
+                  $.getJSON("departments.json",function(departmentsData){
+                  $.getJSON("sections.json",function(sectionsData){*/
+        /*yacs.getCourses(function(coursesData){
+              yacs.getSemesters(function(semestersData){
+                  yacs.getDepartments(function(departmentsData){
+                  yacs.getSections(function(sectionsData){*/
+        
+        /*$.get("/courses", function(coursesData){
+              $.get("/semesters",function(semestersData){
+                  $.get("/departments",function(departmentsData){
+                  $.get("/sections",function(sectionsData){
+                  
+                      //alert("FUCKKKKKKK"); 
+                      var courses = coursesData["result"];
+                      var departments = departmentsData["result"];
+                      var sections = sectionsData["result"]; 
+                      var departmentIdsToCodes = {};
+                      for (var i = 0; i < departments.length; i++)
+                      {
+                        var departmentId = departments[i]["id"];
+                        var departmentCode = departments[i]["code"];
+                        departmentIdsToCodes[departmentId.toString()] = departmentCode;
+                      } 
+                      var classIdsToListOfSections = {};
+                      for (var i = 0; i < sections.length; i++)
+                      {
+                        //make this number a fucking constant at the top
+                        if (sections[i]["semester_id"] != 16073)
+                          continue; //sections are not for current semester 
+                       
+                        var classIdAsString = sections[i]["course_id"].toString();
+                        
+                        var sectionForAClass =  sections[i]["number"]
+                        //for (var j = 0; j < sectionsForAClass.length; j++)
+                        //{
+                        //  //var sectionInfo =  sectionsForAClass["start"];
+                        //  classIdsToListOfSections[classIdAsString]
+                        //      = sections[i]["section_times"];
+                        //}
+                        if (classIdsToListOfSections[classIdAsString] == null)
+                          classIdsToListOfSections[classIdAsString] = [sectionForAClass];
+                        else classIdsToListOfSections[classIdAsString].push(sectionForAClass);
+                      }
+                      console.log("classIdsToListOfSections num fields = " 
+                                + classIdsToListOfSections.__count__);
+                      console.log(classIdsToListOfSections);
+                      for (var i = 0; i < courses.length; i++)
+                      {
+                         var classIdAsString = courses[i]["id"].toString();
+                         var sectionsOfThisClassThisSemester = classIdsToListOfSections[classIdAsString];
+                         if (sectionsOfThisClassThisSemester == null)
+                           continue;//class doesn't have any sections this semester
+                         var departmentCodeOfClass = 
+                             departmentIdsToCodes[courses[i]["department_id"].toString()];
+                         var numberOfClass = courses[i]["number"];
+                         var nameOfClass = courses[i]["name"];
+                         for (var j = 0; j < sectionsOfThisClassThisSemester.length; j++)
+                         {
+                           var sectionNumber = sectionsOfThisClassThisSemester[j];
+                           var classListing = departmentCodeOfClass + " " 
+                                  + numberOfClass + "-" + sectionNumber + ":" + nameOfClass;
+                           classListings.push(classListing);     
+                         }     
+                      }
+                      //alert(courses.length);
+                   });
+                   });
+              });
+         });*/
+       //alert("oh SHIT");
+       //console.log("oh shit");
+       $.get("/allClassListings",function(coursesData){
+         //var result = JSON.parse(coursesData);
+         //classListings.push(coursesData["classes"];
+         for (var i = 0; i < coursesData["classes"].length; i++)
+         {
+           classListings.push(coursesData["classes"][i]);
+         }
+         console.log(classListings);
+       });
+  
+       //$loginusername.val('before click worked?');
+       var descriptionsArray = [];
+      
+       var socket = io.connect();
+       
+       var $classNameInput = $('#classNameInput');
+       var $classes = $('#classes');
+       var $descriptions = $('#descriptions');
+       var $messageForm = $('#send-message');
+       var $messageBox = $('#messageBox');
+       var $chat = $('#chat');
+       //$chat.hide();
+
+       $classNameInput.submit(function(e){
+          console.log("adding a fucking textarea");
+          e.preventDefault();
+          descriptionsArray.push({className:$classes.val()});
+          $descriptions.append("<textarea id='description" + descriptionsArray.length + "' class='form-control' placeholder='" + $classes.val() + ": What are you looking for in a study buddy in this class, and how comfortable are you the class material?'></textarea>" );
+          $classes.val('');
+       });
+
+       $messageForm.submit(function(e){
+	  e.preventDefault();
+	  socket.emit('send message',$messageBox.val());
+	  $messageBox.val('');
+       });
+
+       var $loginButton = $('#loginButton');
+       var $loginUsername = $('#loginUsername');
+       var $loginPassword = $('#loginPassword');
+       var $signupButton = $('#signupButton');
+       var $signupUsername = $('#signupUsername');
+       //var $signupDescription = $('#signupDescription');
+       var $signupPassword = $('#signupPassword');
+       //var $signupWantsToHelp = $('#signupWantsToHelp');
+       //var $signupWantsHelp = $('#signupWantsHelp');
+       var $addClassButton = $('#addClassButton');
+
+       /*var availableClasses = [
+              "How to read 1",
+              "How to read 2"
+           ];*/
+       $('#classes').autocomplete({
+            source: classListings
+        });
+
+       //console.log("do they want to help? " + $signupwantstohelp.val());
+
+       /*$loginbutton.click(function(){
+	  //e.preventdefault();
+	  //console.log("fuck you");
+	  //$signupusername.val('click worked');
+	  socket.emit('login',{username:$loginusername.val(),password:$loginpassword.val()});
+       });*/
+
+       //$loginusername.val('before click worked?');
+       //console.log("does this shit fucking work or not?" + $loginusername.val());
+      
+       $loginButton.click(function(){
+	 socket.emit('login',
+	  {username:$loginUsername.val(),
+		 password:$loginPassword.val()},
+	  function(data){
+	    //console.log("wtf");
+	    if(data.validated)
+	    {
+	      $('#createOrLoginWrap').hide();
+	      $('#navbar').show();
+	      $('#mainArea').show();
+	      console.log(data.users);
+	    } else 
+	    {
+	      $('#loginError').html("we don't recognize your username/password combo. maybe you made a typo?");
+	    }
+	  });
+       });
+ 
+       $signupButton.click(function(){
+	 //$loginusername.val('click worked'); 
+         var classesAndDescriptionsArray = descriptionsArray;
+         for (var i = 0; i < descriptionsArray.length; i++)
+         {
+           classesAndDescriptionsArray[i].description = $('#description' + (i+1)).val();
+           console.log("description " + i + " is " + $('#description' + (i+1)).val());
+         }
+	 socket.emit('signup',
+	   {username:$signupUsername.val(),
+		 password:$signupPassword.val(),
+		 //description:$signupDescription.val(),
+                 classesAndDescriptions:classesAndDescriptionsArray},
+		 //wantsToHelp:$signupWantsToHelp.is(':checked'),
+		 //wantsHelp:$signupWantsHelp.is(':checked')},
+           function(data){
+             console.log("the data is " + data);
+             //$('#signuperror').val(data.tostring()); return;
+             if (data.m == "all good"){
+               $('#createOrLoginWrap').hide();
+               $('#navbar').show(); 
+               $('#mainArea').show();
+               //$('#navbar').css("","block");
+               //$('#mainarea').css("display","block");
+               console.log('login and signup area should now be hidden');
+               console.log('navbar and mainarea should have appeared');
+               //console.log("number of total other users is " + data.d.length);
+               for (var i = 0; i < data.d.length; i++)
+               {
+                 var personListItem = 
+                    "<li class='list-group-item'><p>User:" + 
+                      (data.d)[i].username + "</p>";
+                  for (var j = 0; j < (data.d)[i].classesAndDescriptions.length; j++)
+                  {
+                    var className = (data.d)[i].classesAndDescriptions[j].className;
+                    var description = (data.d)[i].classesAndDescriptions[j].description;
+                    personListItem += 
+                      "<p>" + className + ": " + description + "</p>";
+                
+                  }
+                  personListItem += "<button id='messageWith" + data.d[i].username + 
+                     "' type='button' class='btn btn-default'>Message</button>"; 
+                  $('#placeToPutPeople').append(personListItem + "</li>");
+                  $('#messageWith' + data.d[i].username).click(function()
+                     { 
+                     //substring(11) to get rid of "messageWith"
+                       //console.log("whoa, it noticed that I clicked the message button "
+                       //    + "to talk to " + $(this).attr('id').substring(11));
+                       var messagePartnerName = $(this).attr("id").substring(11); 
+                       //alert(messagePartnerName);
+                       //alert("FUCKKK");
+                       $('#chat').html("<p style='color:blue'>You are messaging "
+                             + messagePartnerName + "</p><p></p><p></p>");
+                       $('#chatArea').show();
+                       //$('#placeToPutPeople').append("<li>FUCK</li>");
+                     });
+                   // " </li>");
+               }
+             }else if (data.m == "somfin missing"){
+               $('#signupError').html('Please fill out all fields and enter at least one class');
+             }else if (data.m == "must check something"){
+               $('#signupError').html('please check at least one of the boxes');
+             }else{
+               $('#signupError').html('that username is already taken. please choose another one');
+             }
+         });
+       });
+
+       socket.on('new message',function(data){
+         $chat.append(data + "<br/>");
+       });
+
+     });
+  </script>
+</body>  
+
+</html>
