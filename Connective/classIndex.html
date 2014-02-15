@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>P2P</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <script type="text/javascript" src="js/angular.min.js"></script>
+  <script type="text/javascript" src="js/angular-resource.min.js"></script> -->
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" >
+  <link rel="stylesheet" type="text/css" href="/test.css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+  <!-- <link rel="stylesheet" type="text/css" href="bootstrap/dist/css/bootstrap-responsive.min.css" /> -->
+   <style>
+    #chat{
+       height:500px;
+    }
+    .form-control{
+       margin:5px 0px 5px 0px;
+    }
+    .btn{
+       margin:5px 0px 5px 0px;
+     }
+  </style>
+</head>
+<body>
+  <!-- <button type="button" class="btn btn-default">Chat anonymously</button>
+  <div style="font-color:blue;font-size:12pt">or sign in:</div>
+  <div class="input-group">
+    <input type="text" class="form-control" placeholder="Username">
+    <input type="text" class="form-control" placeholder="Password">
+    <button id="signinButton" class="btn btn-default" type="button">Sign in</button>
+  </div>
+  <div style="font-color:blue;font-size:12pt">or register:</div>
+  <div class="input-group">
+    <input type="text" class="form-control" placeholder="Username">
+    <input type="text" class="form-control" placeholder="Password">
+    <button id="registerButton" class="btn btn-default" type="button">Register</button>
+  </div> -->
+  
+  <div id="chooseClassArea">
+    <form id="classNameInput">
+      <!-- <label for="classes">Add a class you want a buddy for: </label> -->
+      <input id="classes">
+      <button>Chat with other people in this class</button>
+    </form>
+  </div> 
+  
+  <div id="mainChatArea" style="display:none">
+    <div id="placeWhereMessagesGo">
+    </div>
+    <form id="chatForm">
+      <textarea rows="3" >
+      </textarea>
+    <form>
+  </div>
+    
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+   <script>
+    $(document).ready(function(){
+     console.log("does this fucking print?");
+
+     var classListings = [];
+     $.get("/allClassListings",function(coursesData){
+         //var result = JSON.parse(coursesData);
+         //classListings.push(coursesData["classes"];
+         for (var i = 0; i < coursesData["classes"].length; i++)
+         {
+           classListings.push(coursesData["classes"][i]);
+         }
+         console.log(classListings);
+       });
+
+     $('#classes').autocomplete({
+          source:classListings
+     });
+
+
+      $('#classNameInput').submit(function(e)
+        {
+           e.preventDefault();
+           socket.emit('enterClassChatroom',
+            {className:$('#classes').html()},
+            function(data,err)
+            {
+              if (data == NULL)
+                return;//do something better than this
+              for(var i=0;i<data.messages.length;i++)
+              {
+                placeWhereMessagesGo.append("<p>"+data.messages[i]+"</p>");
+              }
+              $('#chooseClassArea').hide();
+              $('#mainChatArea').show();
+             
+            });
+        });
+    });
+  </script>
+
+</body>
+
+</html>
