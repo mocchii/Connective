@@ -1,5 +1,81 @@
-<% if (typeof username!="undefined") { %><%- username %><% } %>
+<style>
+  .leftDescriptor {
+    float:left;
+    width: 48%;
+  }
+  .rightInputs {
+    float:right;
+    width:48%;
+  }
+  
+  .descriptor {
+    height:25px;
+  }
+  .inputs {
+    height:25px;
+  }
+  
+  .formbox {
+    width:400px;
+  }
+  
+  .error {
+    font-weight:bold;
+    color:#aa0000;
+  }
+  
+  .errorBox {
+    border:1px solid #aa0000;
+  }
+  
+</style>
 
-<form action="postTest" method="post">
-  <input type="text" name="username" />
+<% if (typeof errorMsg!="undefined" && errorMsg!="") { %>
+  <span class='error'><%- errorMsg %></span>
+<% } %>
+
+<form action="signup" method="post" class="formbox">
+  <div class="leftDescriptor">
+    <div class="descriptor">
+      Username
+    </div>
+    
+    <div class="descriptor">
+      RPI E-Mail Address
+    </div>
+    
+    <div class="descriptor">
+      Password
+    </div>
+    
+    <div class="descriptor">
+      Confirm Password
+    </div>
+    
+    <div class="descriptor">
+      &nbsp; <!-- Spacer -->
+    </div>
+    
+    <div class="descriptor">
+      <input type="submit" name="sub" value="Sign Up" />
+    </div>
+  </div>
+  <div class="rightInputs">
+    <div class='inputs'>
+      <input type="text" name="userName" <% if (typeof error!="undefined" && (error & 1)>0) { %>class="errorBox"<% } %> value="<% if (typeof username!="undefined") { %><%- username %><% } %>" />
+    </div>
+    
+    <div class='inputs'>
+      <input type="text" name="email" <% if (typeof error!="undefined" && (error & 2)>0) { %>class="errorBox"<% } %> value="<% if (typeof email!="undefined") { %><%- email %><% } %>" />
+    </div>
+    
+    <div class='inputs'>
+      <input type="password" name="pass" <% if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
+    </div>
+    
+    <div class='inputs'>
+      <input type="password" name="passConf" <% if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
+    </div>
+    
+  </div>
 </form>

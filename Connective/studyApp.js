@@ -4,9 +4,23 @@ var express = require('express'),
   io = require('socket.io').listen(server),
   users = [],
   mongoose = require('mongoose'),
-  yacs = require('./yacs.js');
+  yacs = require('./yacs.js'),
+  mailer=require("nodemailer"),
+  crypto=require("crypto");
 
-server.listen(3000);
+server.listen(80);
+
+var domain="127.0.0.1";
+var smtp = mailer.createTransport("SMTP", {
+    service: "Gmail",
+    auth: {
+        user: "Connective.Team@gmail.com",
+        pass: "nakedmonkeywizard"
+    }
+});
+
+app.use(express.bodyParser());
+app.set('view engine', 'ejs');
 
 mongoose.connect('mongodb://localhost/chat', function(err){
   if(err){
@@ -16,22 +30,119 @@ mongoose.connect('mongodb://localhost/chat', function(err){
   }
 });
 
-/*var userSchema = mongoose.Schema({username:String,password:String
-            ,description:String,wantsHelp:String,wantsToHelp:String});
+/* Analogous to table definition and creation */
+var userSchema = mongoose.Schema({
+  username:String,
+  password:String,
+  email:String,
+  salt:String,
+  confirmed:Boolean,
+  classesAndDescriptions:[{
+    className:String,
+    description:String // Description of the user's needs for the class
+  }]
+});
 
-var User = mongoose.model('User',userSchema);*/
-
-var userSchema = mongoose.Schema({username:String,password:String
-            ,classesAndDescriptions:[{className:String,description:String}]
-                });
-
-var User = mongoose.model('User',userSchema);
+var User = mongoose.model('User', userSchema);
 
 app.use(express.static(__dirname));
 
-app.post("/signup",function(req,res){
-  console.log("test");
-  res.end();
+/* Signup processing */
+app.post("/signup", function(req,res){
+
+  /* Error codes:
+     |1 = Username issue
+     |2 = E-Mail issue
+     |4 = Password issue */
+  var error=0, uname=req.body.userName, errorMess="There were some issues with your signup information. <ul>";
+  
+  User.find({username:req.body.userName}, function(error, found) {
+    if (typeof req.body.userName=="undefined" || req.body.userName=="") {
+      error|=1;
+      uname="";
+      errorMess+="<li>You must create a username! This is how other Connective users will see you.</li>";
+    }
+    else if (found.length>0) {
+      error|=1;
+      uname="";
+      errorMess+="<li>The username you wanted is already taken. Try another!</li>";
+    }
+    
+    if (typeof req.body.pass=="undefined" || typeof req.body.passConf=="undefined" || req.body.pass=="" || req.body.passConf=="") {
+      error|=4;
+      errorMess+="<li>You must enter a password and confirm it, too.</li>";
+    }
+    else if (req.body.pass!=req.body.passConf) {
+      error|=4;
+      errorMess+="<li>The passwords you provided don't match! Be careful when typing them.</li>";
+    }
+    
+    if (typeof req.body.email=="undefined" || req.body.email=="") {
+      error|=2;
+      errorMess+="<li>You need to enter an E-Mail address to use Connective.</li>";
+    }
+    else if (!/^[0-9a-z._+-]+?@([0-9a-z_.+-]*?\.)?rpi\.edu$/i.test(req.body.email)) {
+      error|=2;
+      errorMess+="<li>That E-Mail address is not a valid RPI address! Sorry, we're only available to RPI students.</li>";
+    }
+    
+    if (error>0) {
+      errorMess+="</ul>";
+      res.render("signup", {
+          errorMsg: errorMess,
+          username: uname,
+          error: error,
+          email: req.body.email
+      });
+     }
+     
+     else {
+      
+      /* If there are no issues, salt and hash the password, store the user in the DB, and generate the E-Mail. */
+      function genSalt(len, usableChars) {
+        var ind=(Math.random()*(usableChars.length-1)).toFixed(0);
+        return (len>0) ? usableChars[ind]+genSalt(len-1, usableChars) : "";
+      }
+      var salt=genSalt(8, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_");
+      var sha1=crypto.createHash("sha1");
+      sha1.update(salt.substr(0, 4)+req.body.pass+salt.substr(4,4));
+      var passHash=sha1.digest("hex");
+      
+      var newUser = new User({
+        username:req.body.userName,
+        password:passHash,
+        confirmed:false,
+        salt:salt,
+        classesAndDescriptions:[]
+      });
+      newUser.save();
+      
+      var message={
+        from: "Connective <Connective.Team@gmail.com>",
+        to: req.body.email,
+        subject: "Confirm Your E-Mail",
+        html: "Thanks for joining Connective! Just one more step and you'll be on your way to connecting with students all over RPI. All we need now is for you to confirm your E-Mail address by clicking the link below! (If it doesn't show as a link for you, copy and paste it into your browser's address bar).<br /><br /><a href='"+domain+"/confirmSignup?confirmID="+passHash+"'>"+domain+"/confirmSignup?confirmID="+passHash+"</a><br /><br />Thanks again!",
+        generateTextFromHTML: true
+      };
+
+      smtp.sendMail(message, function(error, resp) {
+        if (error) {
+          console.log("Error: ", error);
+        }
+        else {
+          res.render("confirm", {
+            email: req.body.email
+          });
+          console.log("Message sent: ", resp.message);
+        }
+      });
+     }
+  });
+});
+app.get("/signup", function(req, resp) {
+  resp.render("signup", {
+    username: ""
+  });
 });
 
 app.get('/', function(req,res){
@@ -48,6 +159,7 @@ app.get("/courses",function(request,response){
   getYacsData(request,response,"course");
 });
 
+/* Individual requests for courses, departments, etc.
 app.get("/departments",function(request,response){
   getYacsData(request,response,"department");
 });
@@ -56,7 +168,7 @@ app.get("/semesters",function(request,response){
 });
 app.get("/sections",function(request,response){
   getYacsData(request,response,"section");
-});
+});*/
 
 app.get("/allClassListings",function(request,response){
   response.writeHead(200,{"Content-type":"application/json"});
@@ -68,16 +180,17 @@ app.get("/allClassListings",function(request,response){
 });
 
 //need to pass request?
+/* Unused getYacsData function...for now.
 function getYacsData(request,response,typeOfYacsData){
   response.writeHead(200,{"Content-type":"application/json"});
   yacs.getDataOfThisType(typeOfYacsData,function(list){
     response.write(JSON.stringify(list));
     response.end();
   });
-}
+}*/
 
-
-io.sockets.on('connection',function(socket){
+/* Messaging system */
+io.sockets.on('connection', function(socket){
   socket.on('send message', function(data){
     io.sockets.emit('new message',data);
     //socket.broadcast.emit('new message',data);
