@@ -1,0 +1,18 @@
+<style>
+  .errorText {
+    color:#aa0000;
+    font-weight:bold;
+  }
+  .statusText {
+    color:#00aa00;
+    font-weight:bold;
+  }
+  .statusBox {
+    border:1px solid #000000;
+    padding:4px;
+  }
+</style>
+<div class="statusBox">
+  <span class="errorText"><% if (typeof errorText!="undefined") { %><%- errorText %><% } %></span>
+  <span class="statusText"><% if (typeof statusText!="undefined") { %><%- statusText %><% } %></span>
+</div>

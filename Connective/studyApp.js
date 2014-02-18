@@ -10,7 +10,7 @@ var express = require('express'),
 
 server.listen(80);
 
-var domain="127.0.0.1";
+var domain="http://127.0.0.1";
 var smtp = mailer.createTransport("SMTP", {
     service: "Gmail",
     auth: {
@@ -46,6 +46,37 @@ var userSchema = mongoose.Schema({
 var User = mongoose.model('User', userSchema);
 
 app.use(express.static(__dirname));
+
+/* Confirmation of signup */
+app.get("/confirmSignup", function(req, resp) {
+  var query=req.query;
+  User.find({username:query.user, password:query.confirmID}, function(error, found) {
+    if (found.length<=0) {
+      resp.render("confirmPage", {
+        error: 1,
+        errorText: "The specified user information...doesn't belong to any account that needs to be confirmed. Did you copy it correctly from your confirmation E-Mail?",
+        statusText: ""
+      });
+    }
+    else if (found[0].confirmed) {
+      resp.render("confirmPage", {
+        error: 2,
+        statusText: "Good news--the specified user has already been confirmed! You can just sign in and use Connective now! :)",
+        errorText: ""
+      });
+    }
+    else {
+      found[0].confirmed=true;
+      found[0].save();
+      resp.render("confirmPage", {
+        error:0,
+        errorText:"",
+        statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='myProfile'>Click here to start setting up your Connective profile.</a>"
+      });
+    }
+    
+  })
+});
 
 /* Signup processing */
 app.post("/signup", function(req,res){
@@ -121,7 +152,7 @@ app.post("/signup", function(req,res){
         from: "Connective <Connective.Team@gmail.com>",
         to: req.body.email,
         subject: "Confirm Your E-Mail",
-        html: "Thanks for joining Connective! Just one more step and you'll be on your way to connecting with students all over RPI. All we need now is for you to confirm your E-Mail address by clicking the link below! (If it doesn't show as a link for you, copy and paste it into your browser's address bar).<br /><br /><a href='"+domain+"/confirmSignup?confirmID="+passHash+"'>"+domain+"/confirmSignup?confirmID="+passHash+"</a><br /><br />Thanks again!",
+        html: "Thanks for joining Connective! Just one more step and you'll be on your way to connecting with students all over RPI. All we need now is for you to confirm your E-Mail address by clicking the link below! (If it doesn't show as a link for you, copy and paste it into your browser's address bar).<br /><br /><a href='"+domain+"/confirmSignup?confirmID="+passHash+"&user="+escape(req.body.userName)+"'>"+domain+"/confirmSignup?confirmID="+passHash+"&user="+escape(req.body.userName)+"</a><br /><br />Thanks again!",
         generateTextFromHTML: true
       };
 
@@ -145,10 +176,12 @@ app.get("/signup", function(req, resp) {
   });
 });
 
+/* Static file requests */
 app.get('/', function(req,res){
   res.sendfile(__dirname + '/studyIndex.html');
 });
 
+/* Getting YACS data */
 app.get("/courses",function(request,response){
   /*response.writeHead(200, {"Content-type":"application/json"});
 
@@ -170,6 +203,7 @@ app.get("/sections",function(request,response){
   getYacsData(request,response,"section");
 });*/
 
+/* YACS -- Get all class listings */
 app.get("/allClassListings",function(request,response){
   response.writeHead(200,{"Content-type":"application/json"});
   yacs.getAllClassListings(function(list){
@@ -189,7 +223,7 @@ function getYacsData(request,response,typeOfYacsData){
   });
 }*/
 
-/* Messaging system */
+/* Messaging system/sockets of all sorts */
 io.sockets.on('connection', function(socket){
   socket.on('send message', function(data){
     io.sockets.emit('new message',data);
