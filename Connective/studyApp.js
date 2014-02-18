@@ -1,3 +1,4 @@
+/* Include the necessary modules */
 var express = require('express'),
   app = express(),
   server = require('http').createServer(app),
@@ -8,8 +9,12 @@ var express = require('express'),
   mailer=require("nodemailer"),
   crypto=require("crypto");
 
+/* Setup the server to listen on port 80 (Web traffic port), allow it to parse POSTED body data, and let it render EJS pages */
 server.listen(80);
+app.use(express.bodyParser());
+app.set('view engine', 'ejs');
 
+/* Setup the information for the E-Mail system */
 var domain="http://127.0.0.1";
 var smtp = mailer.createTransport("SMTP", {
     service: "Gmail",
@@ -19,9 +24,7 @@ var smtp = mailer.createTransport("SMTP", {
     }
 });
 
-app.use(express.bodyParser());
-app.set('view engine', 'ejs');
-
+/* Connect to the database when the server starts up -- is this more efficient than connecting when needed? */
 mongoose.connect('mongodb://localhost/chat', function(err){
   if(err){
     console.log(err);
@@ -30,7 +33,7 @@ mongoose.connect('mongodb://localhost/chat', function(err){
   }
 });
 
-/* Analogous to table definition and creation */
+/* Define the User table */
 var userSchema = mongoose.Schema({
   username:String,
   password:String,
@@ -50,7 +53,11 @@ app.use(express.static(__dirname));
 /* Confirmation of signup */
 app.get("/confirmSignup", function(req, resp) {
   var query=req.query;
+  
+  /* Look for a user with the specified username and password-hash */
   User.find({username:query.user, password:query.confirmID}, function(error, found) {
+  
+    /* If a user with that info hasn't registered, say so on the confirmation page. */
     if (found.length<=0) {
       resp.render("confirmPage", {
         error: 1,
@@ -58,6 +65,8 @@ app.get("/confirmSignup", function(req, resp) {
         statusText: ""
       });
     }
+    
+    /* If the user matching the information has already confirmed, say so on the confirmation page. */
     else if (found[0].confirmed) {
       resp.render("confirmPage", {
         error: 2,
@@ -65,6 +74,8 @@ app.get("/confirmSignup", function(req, resp) {
         errorText: ""
       });
     }
+    
+    /* If everything looks good, confirm the user in the database and then show a message on the confirmation page, including a link to their profile to set up */
     else {
       found[0].confirmed=true;
       found[0].save();
@@ -88,6 +99,8 @@ app.post("/signup", function(req,res){
   var error=0, uname=req.body.userName, errorMess="There were some issues with your signup information. <ul>";
   
   User.find({username:req.body.userName}, function(error, found) {
+  
+    /* Verify available username */
     if (typeof req.body.userName=="undefined" || req.body.userName=="") {
       error|=1;
       uname="";
@@ -99,6 +112,7 @@ app.post("/signup", function(req,res){
       errorMess+="<li>The username you wanted is already taken. Try another!</li>";
     }
     
+    /* Verify matching passwords */
     if (typeof req.body.pass=="undefined" || typeof req.body.passConf=="undefined" || req.body.pass=="" || req.body.passConf=="") {
       error|=4;
       errorMess+="<li>You must enter a password and confirm it, too.</li>";
@@ -108,6 +122,7 @@ app.post("/signup", function(req,res){
       errorMess+="<li>The passwords you provided don't match! Be careful when typing them.</li>";
     }
     
+    /* Verify valid RPI E-Mail address */
     if (typeof req.body.email=="undefined" || req.body.email=="") {
       error|=2;
       errorMess+="<li>You need to enter an E-Mail address to use Connective.</li>";
@@ -117,6 +132,7 @@ app.post("/signup", function(req,res){
       errorMess+="<li>That E-Mail address is not a valid RPI address! Sorry, we're only available to RPI students.</li>";
     }
     
+    /* If there are errors, show the signup page again, but with the error information */
     if (error>0) {
       errorMess+="</ul>";
       res.render("signup", {
@@ -129,16 +145,19 @@ app.post("/signup", function(req,res){
      
      else {
       
-      /* If there are no issues, salt and hash the password, store the user in the DB, and generate the E-Mail. */
+      /* If there are no issues, salt and hash the password, store the user in the DB, and generate the confirmation E-Mail. */
       function genSalt(len, usableChars) {
         var ind=(Math.random()*(usableChars.length-1)).toFixed(0);
         return (len>0) ? usableChars[ind]+genSalt(len-1, usableChars) : "";
       }
       var salt=genSalt(8, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_");
       var sha1=crypto.createHash("sha1");
+      
+      /* Hash algorithm: first 4 of salt, then pass, then last 4 of salt, all sha1'd */
       sha1.update(salt.substr(0, 4)+req.body.pass+salt.substr(4,4));
       var passHash=sha1.digest("hex");
       
+      /* Create user in DB */
       var newUser = new User({
         username:req.body.userName,
         password:passHash,
@@ -148,6 +167,7 @@ app.post("/signup", function(req,res){
       });
       newUser.save();
       
+      /* Generate and send confirmation E-Mail */
       var message={
         from: "Connective <Connective.Team@gmail.com>",
         to: req.body.email,
@@ -161,6 +181,7 @@ app.post("/signup", function(req,res){
           console.log("Error: ", error);
         }
         else {
+          /* When E-Mail is sent, render the "E-Mail sent, please confirm" page */
           res.render("confirm", {
             email: req.body.email
           });
@@ -170,6 +191,8 @@ app.post("/signup", function(req,res){
      }
   });
 });
+
+/* Blank signup page before anything's submitted */
 app.get("/signup", function(req, resp) {
   resp.render("signup", {
     username: ""
