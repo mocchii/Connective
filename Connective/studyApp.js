@@ -24,7 +24,6 @@ var smtp = mailer.createTransport("SMTP", {
     }
 });
 
-<<<<<<< HEAD
 /* Setup Express to use the modules we need, like EJS, bodyParser (for POST data), etc. */
 app.use(express.bodyParser());
 app.set('view engine', 'ejs');
@@ -33,9 +32,7 @@ app.set('view engine', 'ejs');
 app.use(express.cookieParser());
 app.use(express.session({secret: 'banemask'}));
 
-=======
 /* Connect to the database when the server starts up -- is this more efficient than connecting when needed? */
->>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
 mongoose.connect('mongodb://localhost/chat', function(err){
   if(err){
     console.log(err);
@@ -65,30 +62,17 @@ app.use(express.static(__dirname));
 /* Confirmation of signup */
 app.get("/confirmSignup", function(req, resp) {
   var query=req.query;
-<<<<<<< HEAD
   User.findOne({username:query.user, password:query.confirmID}, function(error, found) {
     if (found==null) {
-=======
-  
-  /* Look for a user with the specified username and password-hash */
-  User.find({username:query.user, password:query.confirmID}, function(error, found) {
-  
-    /* If a user with that info hasn't registered, say so on the confirmation page. */
-    if (found.length<=0) {
->>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
+      /* If a user with that info hasn't registered, say so on the confirmation page. */
       resp.render("confirmPage", {
         error: 1,
         errorText: "The specified user information...doesn't belong to any account that needs to be confirmed. Did you copy it correctly from your confirmation E-Mail?",
         statusText: ""
       });
     }
-<<<<<<< HEAD
     else if (found.confirmed) {
-=======
-    
-    /* If the user matching the information has already confirmed, say so on the confirmation page. */
-    else if (found[0].confirmed) {
->>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
+      /* If the user matching the information has already confirmed, say so on the confirmation page. */
       resp.render("confirmPage", {
         error: 2,
         statusText: "Good news--the specified user has already been confirmed! You can just sign in and use Connective now! :)",
@@ -119,13 +103,8 @@ app.post("/signup", function(req,res){
      |4 = Password issue */
   var error=0, uname=req.body.userName, errorMess="There were some issues with your signup information. <ul>";
   
-<<<<<<< HEAD
   User.findOne({uname_lower:req.body.userName.toLowerCase()}, function(error, found) {
-=======
-  User.find({username:req.body.userName}, function(error, found) {
-  
     /* Verify available username */
->>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
     if (typeof req.body.userName=="undefined" || req.body.userName=="") {
       error|=1;
       uname="";
@@ -423,5 +402,3 @@ io.sockets.on('connection', function(socket){
   });
 
 });
-
-

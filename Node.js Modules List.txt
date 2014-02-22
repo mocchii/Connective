@@ -5,5 +5,6 @@ Node.js modules used (please install these in your local copy before running the
 -socket.io
 -crypto
 -mongoose
+-ejs
 
 Also, make sure yacs.js is in the main directory and "require('./yacs.js')" is in the main server files where needed.
