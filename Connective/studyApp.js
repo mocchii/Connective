@@ -24,7 +24,18 @@ var smtp = mailer.createTransport("SMTP", {
     }
 });
 
+<<<<<<< HEAD
+/* Setup Express to use the modules we need, like EJS, bodyParser (for POST data), etc. */
+app.use(express.bodyParser());
+app.set('view engine', 'ejs');
+
+/* This part sets up Express to use sessions */
+app.use(express.cookieParser());
+app.use(express.session({secret: 'banemask'}));
+
+=======
 /* Connect to the database when the server starts up -- is this more efficient than connecting when needed? */
+>>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
 mongoose.connect('mongodb://localhost/chat', function(err){
   if(err){
     console.log(err);
@@ -36,6 +47,7 @@ mongoose.connect('mongodb://localhost/chat', function(err){
 /* Define the User table */
 var userSchema = mongoose.Schema({
   username:String,
+  uname_lower:String,
   password:String,
   email:String,
   salt:String,
@@ -53,21 +65,30 @@ app.use(express.static(__dirname));
 /* Confirmation of signup */
 app.get("/confirmSignup", function(req, resp) {
   var query=req.query;
+<<<<<<< HEAD
+  User.findOne({username:query.user, password:query.confirmID}, function(error, found) {
+    if (found==null) {
+=======
   
   /* Look for a user with the specified username and password-hash */
   User.find({username:query.user, password:query.confirmID}, function(error, found) {
   
     /* If a user with that info hasn't registered, say so on the confirmation page. */
     if (found.length<=0) {
+>>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
       resp.render("confirmPage", {
         error: 1,
         errorText: "The specified user information...doesn't belong to any account that needs to be confirmed. Did you copy it correctly from your confirmation E-Mail?",
         statusText: ""
       });
     }
+<<<<<<< HEAD
+    else if (found.confirmed) {
+=======
     
     /* If the user matching the information has already confirmed, say so on the confirmation page. */
     else if (found[0].confirmed) {
+>>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
       resp.render("confirmPage", {
         error: 2,
         statusText: "Good news--the specified user has already been confirmed! You can just sign in and use Connective now! :)",
@@ -77,8 +98,8 @@ app.get("/confirmSignup", function(req, resp) {
     
     /* If everything looks good, confirm the user in the database and then show a message on the confirmation page, including a link to their profile to set up */
     else {
-      found[0].confirmed=true;
-      found[0].save();
+      found.confirmed=true;
+      found.save();
       resp.render("confirmPage", {
         error:0,
         errorText:"",
@@ -98,15 +119,19 @@ app.post("/signup", function(req,res){
      |4 = Password issue */
   var error=0, uname=req.body.userName, errorMess="There were some issues with your signup information. <ul>";
   
+<<<<<<< HEAD
+  User.findOne({uname_lower:req.body.userName.toLowerCase()}, function(error, found) {
+=======
   User.find({username:req.body.userName}, function(error, found) {
   
     /* Verify available username */
+>>>>>>> 479e7b05e2ebbf0a041ee977581ac9db35882f8e
     if (typeof req.body.userName=="undefined" || req.body.userName=="") {
       error|=1;
       uname="";
       errorMess+="<li>You must create a username! This is how other Connective users will see you.</li>";
     }
-    else if (found.length>0) {
+    else if (found!=null) {
       error|=1;
       uname="";
       errorMess+="<li>The username you wanted is already taken. Try another!</li>";
@@ -160,6 +185,7 @@ app.post("/signup", function(req,res){
       /* Create user in DB */
       var newUser = new User({
         username:req.body.userName,
+        uname_lower:req.body.userName.toLowerCase(),
         password:passHash,
         confirmed:false,
         salt:salt,
@@ -197,6 +223,57 @@ app.get("/signup", function(req, resp) {
   resp.render("signup", {
     username: ""
   });
+});
+
+/* Signin processing */
+app.post("/signin", function(req, res) {
+  User.findOne({uname_lower:req.body.userName.toLowerCase()}, function(error, found) {
+    if (found==null) {
+      res.render("signin", {
+        username: req.body.userName,
+        error: 1,
+        errorText: "There's no account with the username "+req.body.userName+". Did you type it correctly?"
+      });
+    }
+    else if (!found.confirmed) {
+      res.render("notconfirmed", {
+        username: req.body.userName,
+        error:2,
+        errorText: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in."
+      });
+    }
+    else {
+      var sha1=crypto.createHash("sha1");
+      sha1.update(found.salt.substr(0, 4)+req.body.pass+found.salt.substr(4,4));
+      var passHash=sha1.digest("hex");
+      if (passHash==found.password) {
+        req.session.signedin=true;
+        req.session.uname=req.body.userName.toLowerCase();
+        req.session.key=found.password;
+        res.redirect("/myProfile");
+      }
+      else {
+        res.render("signin", {
+          username:req.body.userName,
+          error:4,
+          errorText: "The password you entered was not corrrect. Make sure capslock is off."
+        });
+      }
+    }
+  });
+});
+
+app.get("/signin", function(req, resp) {
+  if (req.session.signedin) {
+    resp.redirect("/myProfile");
+  }
+  else {
+    resp.render("signin");
+  }
+});
+
+app.get("/myProfile", function(req, resp) {
+  resp.send("Your profile will be here once we have one up and running.");
 });
 
 /* Static file requests */
