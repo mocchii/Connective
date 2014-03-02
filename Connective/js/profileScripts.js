@@ -21,17 +21,23 @@ $(document).ready(function() {
           alert(data.substr(7));
         }
         else {
-          var ul, li;
+          var ul, li, lis;
           li=removeWhat;
           while (li && li.prop("tagName").toLowerCase()!="li") { li=li.parent(); }
           ul=li;
           while (ul && ul.prop("tagName").toLowerCase()!="ul") { ul=ul.parent(); }
-          l=ul.children("li").length;
           li.remove();
-          if (l<=1) {
+          lis=ul.children("li");
+          if (lis.length<=0) {
             var p=ul.parent();
             ul.remove();
-            p.html("None Added");
+            p.append("None Added");
+          }
+          else {
+            lis.each(function() {
+              var dataChildren=$(this).children("span");
+              dataChildren.attr("data-id", dataChildren.attr("data-id")-1);
+            });
           }
         }
       },

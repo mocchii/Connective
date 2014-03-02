@@ -287,10 +287,10 @@ app.get("/profile", function(req, resp) {
 
 // Remove class
 app.post("/deleteClass", function (req, resp) {
- req.sessionID = req.cookies.express_sid;
-
-  if (!req.session.signedIn) { resp.send("ERROR: You must be signed in to remove a course."); }
-  else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only remove courses from your own profile. ("+req.session.username+" != "+req.body.user.toLowerCase()+")"); }
+  if (!req.session.signedIn) {
+    resp.send("ERROR: You must be signed in to remove a course.");
+  }
+  else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only remove courses from your own profile."); }
   else {
     User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
       if (err || found==null) {
