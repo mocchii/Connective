@@ -27,10 +27,14 @@ var smtp = mailer.createTransport("SMTP", {
 /* Setup Express to use the modules we need, like EJS, bodyParser (for POST data), etc. */
 app.use(express.bodyParser());
 app.set('view engine', 'ejs');
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  return next();
+});
 
 /* This part sets up Express to use sessions */
 app.use(express.cookieParser());
-app.use(express.session({secret: 'banemask'}));
+app.use(express.session({secret: 'banemask', key: "express_sid"}));
 
 /* Connect to the database when the server starts up -- is this more efficient than connecting when needed? */
 mongoose.connect('mongodb://localhost/chat', function(err){
@@ -52,7 +56,8 @@ var userSchema = mongoose.Schema({
   classesAndDescriptions:[{
     className:String,
     description:String // Description of the user's needs for the class
-  }]
+  }],
+  buddies: [String]
 });
 
 var User = mongoose.model('User', userSchema);
@@ -87,7 +92,7 @@ app.get("/confirmSignup", function(req, resp) {
       resp.render("confirmPage", {
         error:0,
         errorText:"",
-        statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='myProfile'>Click here to start setting up your Connective profile.</a>"
+        statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='profile?user="+found.username+"'>Click here to start setting up your Connective profile.</a>"
       });
     }
     
@@ -226,10 +231,10 @@ app.post("/signin", function(req, res) {
       sha1.update(found.salt.substr(0, 4)+req.body.pass+found.salt.substr(4,4));
       var passHash=sha1.digest("hex");
       if (passHash==found.password) {
-        req.session.signedin=true;
+        req.session.signedIn=true;
         req.session.uname=req.body.userName.toLowerCase();
         req.session.key=found.password;
-        res.redirect("/myProfile");
+        res.redirect("/profile?user="+found.username);
       }
       else {
         res.render("signin", {
@@ -251,36 +256,69 @@ app.get("/signin", function(req, resp) {
   }
 });
 
-app.get("/myProfile", function(req, resp) {
-  resp.send("Your profile will be here once we have one up and running.");
+app.get("/signout", function(req, resp) {
+  req.session.destroy();
+  resp.render("signin");
+});
+
+/* Profiles */
+app.get("/profile", function(req, resp) {
+  var un=req.query.user.toLowerCase();
+  if (un=="") {
+    resp.send("User does not exist");
+  }
+  else {
+    User.findOne({uname_lower:un}, function (err, found) {
+      if (err || found==null) {
+        resp.send("User does not exist.");
+      }
+      else {
+        resp.render("profile", {
+          session: req.sessionID,
+          userData: found,
+          isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key)
+        });
+      }
+    });
+  }
+});
+
+/* User manipulation -- adding, removing, changing classes, buddies, etc. */
+
+// Remove class
+app.post("/deleteClass", function (req, resp) {
+ req.sessionID = req.cookies.express_sid;
+
+  if (!req.session.signedIn) { resp.send("ERROR: You must be signed in to remove a course."); }
+  else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only remove courses from your own profile. ("+req.session.username+" != "+req.body.user.toLowerCase()+")"); }
+  else {
+    User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
+      if (err || found==null) {
+        resp.send("ERROR: You must be signed in to remove a course.");
+      }
+      else {
+        if (found.classesAndDescriptions.length<=req.body.id) {
+          resp.send("ERROR: The course you're trying to remove does not exist.");
+        }
+        else {
+          found.classesAndDescriptions.splice(req.body.id,1);
+          found.save();
+          resp.send("SUCCESS");
+        }
+      }
+    });
+  }
 });
 
 /* Static file requests */
-app.get('/', function(req,res){
+app.get('/', function(req,res){  
   res.sendfile(__dirname + '/studyIndex.html');
 });
 
 /* Getting YACS data */
 app.get("/courses",function(request,response){
-  /*response.writeHead(200, {"Content-type":"application/json"});
-
-  yacs.getCourses(function(list) {
-    response.write(JSON.stringify(list));
-    response.end();
-  });*/
   getYacsData(request,response,"course");
 });
-
-/* Individual requests for courses, departments, etc.
-app.get("/departments",function(request,response){
-  getYacsData(request,response,"department");
-});
-app.get("/semesters",function(request,response){
-  getYacsData(request,response,"semester");
-});
-app.get("/sections",function(request,response){
-  getYacsData(request,response,"section");
-});*/
 
 /* YACS -- Get all class listings */
 app.get("/allClassListings",function(request,response){
@@ -291,16 +329,6 @@ app.get("/allClassListings",function(request,response){
     response.end();
   });
 });
-
-//need to pass request?
-/* Unused getYacsData function...for now.
-function getYacsData(request,response,typeOfYacsData){
-  response.writeHead(200,{"Content-type":"application/json"});
-  yacs.getDataOfThisType(typeOfYacsData,function(list){
-    response.write(JSON.stringify(list));
-    response.end();
-  });
-}*/
 
 /* Messaging system/sockets of all sorts */
 io.sockets.on('connection', function(socket){
@@ -336,18 +364,6 @@ io.sockets.on('connection', function(socket){
   socket.on('signup', function(data, callback){
     console.log("username is " + data['username'].toString());
     console.log("callback is " + callback);
-    /*if (users[data['username']] == null)
-    {
-      users[data['username']] = {password:data['password']};
-      socket.username = data.username;
-      callback(true);
-    }
-    else
-    {
-      callback(false);
-    }*/
-    //console.log("wants help: " + data.wantsHelp);
-    //console.log("wants to help: " + data.wantsToHelp);
     
     if (data.username == "" || data.password == "" 
            //|| data.description == ""
@@ -356,11 +372,7 @@ io.sockets.on('connection', function(socket){
       console.log("somfin missing");
       callback({m:"somfin missing"});
     }
-    /*else if (!data.wantsHelp && !data.wantsToHelp)
-    {
-      callback("must check something");
-      console.log("must check something");
-    }*/
+    
     else
     {
       //console.log("please show this!!");

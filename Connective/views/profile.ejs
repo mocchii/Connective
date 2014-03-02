@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title><%- userData.username %>'s Profile - Connective</title>
+    <style>
+      .title { font-size:18pt; display: block; }
+      .header { font-weight: bold; }
+      .className { cursor: pointer; color: #0088ee; }
+      .classDesc { display: none; padding:4px; border:1px solid #555555; background-color:#ddeeee; }
+      .profileLeft { float:left; width:20%; }
+      .profileMid { float:left; width:60%; }
+      .delete { cursor:pointer; position:relative; top:1px; }
+    </style>
+    <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script type="text/javascript">thisUser="<%- userData.username %>";</script>
+    <script src="js/profileScripts.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <span class="title"><%- userData.username %></span>
+    <div class="profileLeft">
+      <span class="header">Courses</span><br />
+      <% if (userData.classesAndDescriptions.length>0) { %>
+      <ul>
+        <% for (var i=0; i<userData.classesAndDescriptions.length; ++i) { %>
+        <li><span class="className" data-id="<%- i %>"><%- userData.classesAndDescriptions[i].className %></span> &nbsp; <%
+          if (isMe) {
+        %><span class="delete" data-id="<%- i %>"><img src="images/deleteIcon.png" /></span><% } %>
+        <div class="classDesc" id="classData<%- i %>"><%- userData.classesAndDescriptions[i].description %></div>
+        <% } %></li>
+      </ul>
+      <% } else { %>
+      None Added
+      <% } %>
+    </div>
+    
+    <div class="profileMid">
+    
+    </div>
+    
+  </body>
+</html>

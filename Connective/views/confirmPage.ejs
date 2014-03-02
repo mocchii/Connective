@@ -1,18 +1,25 @@
-<style>
-  .errorText {
-    color:#aa0000;
-    font-weight:bold;
-  }
-  .statusText {
-    color:#00aa00;
-    font-weight:bold;
-  }
-  .statusBox {
-    border:1px solid #000000;
-    padding:4px;
-  }
-</style>
-<div class="statusBox">
-  <span class="errorText"><% if (typeof errorText!="undefined") { %><%- errorText %><% } %></span>
-  <span class="statusText"><% if (typeof statusText!="undefined") { %><%- statusText %><% } %></span>
-</div>
+<html>
+  <head>
+    <title><% if (error==0 || error==2) { %>Account Confirmed<% } else { %>Error Confirming Account<% } %> - Connective</title>
+    <style>
+      .errorText {
+        color:#aa0000;
+        font-weight:bold;
+      }
+      .statusText {
+        color:#00aa00;
+        font-weight:bold;
+      }
+      .statusBox {
+        border:1px solid #000000;
+        padding:4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="statusBox">
+      <span class="errorText"><% if (typeof errorText!="undefined") { %><%- errorText %><% } %></span>
+      <span class="statusText"><% if (typeof statusText!="undefined") { %><%- statusText %><% } %></span>
+    </div>
+  </body>
+</html>
