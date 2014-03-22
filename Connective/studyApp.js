@@ -310,6 +310,35 @@ app.post("/deleteClass", function (req, resp) {
   }
 });
 
+// Add class
+app.post("/addClass", function (req, resp) {
+  if (!req.session.signedIn) {
+    resp.send("ERROR: You must be signed in to add a course.");
+  }
+  else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only add courses to your own profile."); }
+  else {
+    User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
+      if (err || found==null) {
+        resp.send("ERROR: You must be signed in to add a course.");
+      }
+      else {
+        var success=true;
+        for (var i=0; i<found.classesAndDescriptions.length; i++) {
+          if (found.classesAndDescriptions[i].className==req.body.course) {
+            resp.send("ERROR: You're already registered for this course.");
+            success=false;
+          }
+        }
+        if (success) {
+          found.classesAndDescriptions.push({className: req.body.course, description:""});
+          found.save();
+          resp.send("SUCCESS");
+        }
+      }
+    });
+  }
+});
+
 /* Static file requests */
 app.get('/', function(req,res){  
   res.sendfile(__dirname + '/studyIndex.html');
@@ -324,7 +353,7 @@ app.get("/courses",function(request,response){
 app.get("/allClassListings",function(request,response){
   response.writeHead(200,{"Content-type":"application/json"});
   yacs.getAllClassListings(function(list){
-    response.write(JSON.stringify(list));
+    response.write(JSON.stringify(list, null, '\t'));
     //console.log(list);
     response.end();
   });

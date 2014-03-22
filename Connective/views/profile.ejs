@@ -5,30 +5,66 @@
       .title { font-size:18pt; display: block; }
       .header { font-weight: bold; }
       .className { cursor: pointer; color: #0088ee; }
-      .classDesc { display: none; padding:4px; border:1px solid #555555; background-color:#ddeeee; }
+      .classDesc { position:relative; display: none; padding:4px; border:1px solid #555555; background-color:#ddeeee; }
       .profileLeft { float:left; width:20%; }
       .profileMid { float:left; width:60%; }
       .delete { cursor:pointer; position:relative; top:1px; }
+      #addClass { cursor:pointer; color:#0088ee; font-weight:bold;}
+      #newClassArea { width:0px; overflow:hidden; display:inline-block; }
+      #newClassForm { display:inline; }
+      #newClass { width:200px; }
+      .ui-autocomplete, .ui-menu-item {
+        font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
+        font-size: 62.5%;
+      } 
+      .editButton {
+        background:url(http://battleofthebits.org/data/icons/pencil.png);
+        width:16px;
+        height:16px;
+        position:absolute;
+        right:2px;
+      }
     </style>
+
+    <!-- jQueryUI styles for autocomplete use -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+
+    <!-- jQuery, jQuery UI (for Autocomplete), and profile-specific scripts -->
     <script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script src="./js/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
     <script type="text/javascript">thisUser="<%- userData.username %>";</script>
     <script src="js/profileScripts.js" type="text/javascript"></script>
+    
   </head>
   <body>
     <span class="title"><%- userData.username %></span>
     <div class="profileLeft">
       <span class="header">Courses</span><br />
       <% if (userData.classesAndDescriptions.length>0) { %>
-      <ul>
+      <ul id="myClassList">
         <% for (var i=0; i<userData.classesAndDescriptions.length; ++i) { %>
         <li><span class="className" data-id="<%- i %>"><%- userData.classesAndDescriptions[i].className %></span> &nbsp; <%
           if (isMe) {
         %><span class="delete" data-id="<%- i %>"><img src="images/deleteIcon.png" /></span><% } %>
-        <div class="classDesc" id="classData<%- i %>"><%- userData.classesAndDescriptions[i].description %></div>
+        <div class="classDesc" id="classData<%- i %>"><span class='editButton'>&nbsp;</span><%- userData.classesAndDescriptions[i].description %></div>
         <% } %></li>
+        <li>
+          <div id="newClassArea">
+            <form id="newClassForm" onsubmit="AddClass(); return false">
+              <input type="text" id="newClass" />
+            </form>
+          </div>
+          <span id="addClass">Add Course</span>
+        </li>
       </ul>
       <% } else { %>
-      None Added
+      None Added<br />
+      <span id="newClassArea">
+        <form id="newClassForm" onsubmit="AddClass(); return false">
+          <input type="text" id="newClass" />
+        </form>
+      </span>
+      <span id="addClass">Add Course</span>
       <% } %>
     </div>
     

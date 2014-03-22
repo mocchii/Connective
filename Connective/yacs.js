@@ -24,11 +24,6 @@ function getDataOfThisType(typeOfYacsData, callback) {
   getLocallyOrGetFromWebAndCacheForAWeek(typeOfYacsData, callback);
 }
 
-function computeClassListings(coursesData,departmentsData,sectionsData,semestersData)
-{
-    
-}
-
 function getAllClassListings(callback) {
   getCourses(function(coursesData){
   getDepartments(function(departmentsData){
@@ -40,7 +35,8 @@ function getAllClassListings(callback) {
              var lastUpdated = fs.lstatSync("caches/classListings.json").mtime;
         }
         if (new Date() - lastUpdated < MILLISECONDS_IN_A_WEEK) {
-             callback(JSON.parse(fs.readFileSync("caches/classListings.json"))); 
+             callback(JSON.parse(fs.readFileSync("caches/classListings.json")));
+             return;
         }
 
 	var courses = coursesData["result"];
@@ -52,8 +48,8 @@ function getAllClassListings(callback) {
           var t2 = new Date(s2.year, s2.month).getTime();
           return t2-t1;
         });
-        var lastTwoSemesterNames = [semesters[0]["name"], semesters[1]["name"]];
-        var lastTwoSemesterIds = [semesters[0]["id"],semesters[1]["id"]];
+        var lastThreeSemesterNames = [semesters[0]["name"], semesters[1]["name"], semesters[2]["name"]];
+        var lastThreeSemesterIds = [semesters[0]["id"],semesters[1]["id"], semesters[2]["id"]];
         //console.log(lastTwoSemesters);
 	var departmentIdsToCodes = {};
         
@@ -70,7 +66,7 @@ function getAllClassListings(callback) {
 	  //make this number a fucking constant at the top
 	  //if (sections[i]["semester_id"] != 16073)
          
-          var semesterIndexOfThisSection = lastTwoSemesterIds.indexOf(sections[i]["semester_id"]);
+          var semesterIndexOfThisSection = lastThreeSemesterIds.indexOf(sections[i]["semester_id"]);
           //if (lastTwoSemesters.indexOf(sections[i]["semester_id"]) == -1)
           if (semesterIndexOfThisSection == -1)
 	    continue; //sections are not for two semesters of Interest (this and next, or this and last)
@@ -86,9 +82,9 @@ function getAllClassListings(callback) {
 	  }*/
 	if (classIdsToListOfSections[classIdAsString] == null)
 	  classIdsToListOfSections[classIdAsString] 
-                  = [{section:sectionForAClass, semester:lastTwoSemesterNames[semesterIndexOfThisSection]}];
+                  = [{section:sectionForAClass, semester:lastThreeSemesterNames[semesterIndexOfThisSection]}];
 	else classIdsToListOfSections[classIdAsString]
-                  .push({section:sectionForAClass, semester:lastTwoSemesterNames[semesterIndexOfThisSection]});
+                  .push({section:sectionForAClass, semester:lastThreeSemesterNames[semesterIndexOfThisSection]});
 	}
 	//console.log("classIdsToListOfSections num fields = " 
 	//	+ classIdsToListOfSections.__count__);
@@ -108,7 +104,7 @@ function getAllClassListings(callback) {
            var sectionNumber = sectionsOfThisClassThisSemester[j].section;
            var semester = sectionsOfThisClassThisSemester[j].semester;
            var classListing = departmentCodeOfClass + " " 
-                  + numberOfClass + "-" + sectionNumber + ":" + nameOfClass + "--" + semester;
+                  + numberOfClass + " - " + sectionNumber + ": " + nameOfClass + " -- " + semester;
            classListings.push(classListing);     
          }     
         }  
