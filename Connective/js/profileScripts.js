@@ -1,9 +1,66 @@
+function SaveDescription() {
+	  var myNum=$(this).attr("data-id");
+	  var myEdit=$("#description"+myNum);
+		var myBox=$("#descEdit"+myNum);
+		$.ajax("editDesc", {
+      type: "POST",
+      data: {
+        id: $(this).attr("data-id"),
+        user: thisUser,
+				description: myBox.val()
+      },
+      complete: function(xhr, stat) {
+        var theID=0;
+        var data=xhr.responseText;
+        if (stat<200 || stat>=300) { alert("Failed"); }
+        else if (data.substr(0,7)=="ERROR: ") {
+          alert(data.substr(7));
+        }
+        else {
+          myEdit.text(myBox.val());
+					$(this).unbind("click").click(ShowEdit);
+        }
+      },
+      error: function(xhr, stat, err) {
+        alert("Error: "+err);
+      },
+      xhrFields: { withCredentials: true }
+    });
+}
+function ShowEdit() {
+	  var myNum=$(this).attr("data-id");
+	  var myEdit=$("#description"+myNum);
+		
+		/* Create a textbox with the current description text */
+		myEdit.html("<textarea rows=5 cols=25 id='descEdit"+myNum+"'>"+myEdit.text()+"</textarea>");
+		
+		/* Focus on it */
+		var myText=document.getElementById("descEdit"+myNum);
+		myText.focus();
+		
+		/* Move the cursor to the end of the text */
+    var end=myText.value.length;
+    if (myText.setSelectionRange) {
+        myText.setSelectionRange(end,end);  
+    } else { // IE style
+        var aRange = myText.createTextRange();
+        aRange.collapse(true);
+        aRange.moveEnd('character', end);
+        aRange.moveStart('character', end);
+        aRange.select();    
+    }
+		
+		/* Change the function of the edit button to save */
+		$(this).unbind("click").click(SaveDescription);
+}
 function SetDatas() {
   $(".className").unbind("click").click(function() {
     var index=$(this).attr("data-id");
     $("#classData"+index).slideToggle("slow");
   });
   
+	$(".editButton").unbind("click").click(ShowEdit);
+	
   $(".delete").unbind("click").click(function() {
     var removeWhat=$(this);
     if (!confirm("Are you sure you want to remove this course?")) { return false; }
@@ -67,13 +124,20 @@ function AddClass() {
         alert(data.substr(7));
       }
       else {
+			  var response=JSON.parse(data);
         var li=document.createElement("li");
         var dataID=$("#myClassList").children().length-1;
-        li.innerHTML="<span class='className' data-id='"+dataID+"'>"+$("#newClass").val()+"</span> &nbsp;";
+        li.innerHTML="<span class='className' data-id='"+dataID+"'>"+response.className+"</span> &nbsp;";
         li.innerHTML+="<span class='delete' data-id='"+dataID+"'><img src='images/deleteIcon.png' /></span>";
-        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton'>&nbsp;</span></div>";
+        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton'>&nbsp;</span><span class='courseInfo'>"+response.code+" - "+response.semester+"</span><br /><div id='description"+dataID+"' class='descriptionBox'></div></div>";
         $(li).attr("data-id", dataID);
-        $(li).insertBefore($("#myClassList").children().last());
+				
+				if (dataID>=0) {
+					$(li).insertBefore($("#myClassList").children().last());
+				}
+				else {
+				  $("#myClassList").append(li);
+				}
         SetDatas();
         $("#newClass").val("");
         $("#newClassArea").animate({width:'0px'}, 350);
@@ -84,8 +148,8 @@ function AddClass() {
   });
 }
 
+var isAdding=false;
 $(document).ready(function() {
-  var isAdding=false;
   
   SetDatas();
   

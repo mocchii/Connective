@@ -54,8 +54,11 @@ var userSchema = mongoose.Schema({
   salt:String,
   confirmed:Boolean,
   classesAndDescriptions:[{
-    className:String,
-    description:String // Description of the user's needs for the class
+		className: String, // Class name, like "Foundations of Computer Science"
+		section: String, // Section, as a 0-padded string, like "02"
+		semester: String, // Semester like "Spring 2014"
+		code: String, // Class code like "CSCI 2200"
+		description:String // User's self-evaluation in the course
   }],
   buddies: [String]
 });
@@ -89,6 +92,9 @@ app.get("/confirmSignup", function(req, resp) {
     else {
       found.confirmed=true;
       found.save();
+			req.session.signedIn=true;
+			req.session.key=found.password;
+			req.session.uname=found.username.toLowerCase();
       resp.render("confirmPage", {
         error:0,
         errorText:"",
@@ -313,13 +319,13 @@ app.post("/deleteClass", function (req, resp) {
 // Add class
 app.post("/addClass", function (req, resp) {
   if (!req.session.signedIn) {
-    resp.send("ERROR: You must be signed in to add a course.");
+    resp.send("ERROR: You must be signed in to add a course. (No signedin session)");
   }
   else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only add courses to your own profile."); }
   else {
     User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
       if (err || found==null) {
-        resp.send("ERROR: You must be signed in to add a course.");
+        resp.send("ERROR: You must be signed in to add a course. (No DB entry found)");
       }
       else {
         var success=true;
@@ -330,7 +336,42 @@ app.post("/addClass", function (req, resp) {
           }
         }
         if (success) {
-          found.classesAndDescriptions.push({className: req.body.course, description:""});
+				  var rawName=req.body.course;
+					rawName.match(/(.+?) - ([0-9]+): (.+?) -- (.+)/);
+					var classCode=RegExp.$1, section=RegExp.$2, className=RegExp.$3, semester=RegExp.$4;
+					var classObject={
+					  className: className,
+						section: section,
+						semester: semester,
+						code: classCode,
+						description:""
+					};
+          found.classesAndDescriptions.push(classObject);
+          found.save();
+          resp.send(JSON.stringify(classObject));
+        }
+      }
+    });
+  }
+});
+
+/* Edit class descriptions */
+app.post("/editDesc", function (req, resp) {
+  if (!req.session.signedIn) {
+    resp.send("ERROR: You must be signed in to edit a course self-evaluation.");
+  }
+  else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only edit self-evaluations from your own profile."); }
+  else {
+    User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
+      if (err || found==null) {
+        resp.send("ERROR: You must be signed in to edit a self-evaluation.");
+      }
+      else {
+        if (found.classesAndDescriptions.length<=req.body.id) {
+          resp.send("ERROR: The course you're trying to edit does not exist.");
+        }
+        else {
+          found.classesAndDescriptions[req.body.id].description=req.body.description;
           found.save();
           resp.send("SUCCESS");
         }

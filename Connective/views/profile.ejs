@@ -13,17 +13,27 @@
       #newClassArea { width:0px; overflow:hidden; display:inline-block; }
       #newClassForm { display:inline; }
       #newClass { width:200px; }
+			#myClassList, #myClassList li { width:100%; }
       .ui-autocomplete, .ui-menu-item {
         font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
         font-size: 62.5%;
       } 
+			.courseInfo {
+			  font-style: italic;
+				font-weight:bold;
+				font-size:10pt;
+			}
       .editButton {
         background:url(http://battleofthebits.org/data/icons/pencil.png);
         width:16px;
         height:16px;
         position:absolute;
         right:2px;
+				cursor:pointer;
       }
+			.descriptionBox {
+			  display:inline;
+			}
     </style>
 
     <!-- jQueryUI styles for autocomplete use -->
@@ -43,10 +53,11 @@
       <% if (userData.classesAndDescriptions.length>0) { %>
       <ul id="myClassList">
         <% for (var i=0; i<userData.classesAndDescriptions.length; ++i) { %>
-        <li><span class="className" data-id="<%- i %>"><%- userData.classesAndDescriptions[i].className %></span> &nbsp; <%
+        <li><span class="className" data-id="<%- i %>"><%= userData.classesAndDescriptions[i].className %></span> &nbsp; <%
           if (isMe) {
         %><span class="delete" data-id="<%- i %>"><img src="images/deleteIcon.png" /></span><% } %>
-        <div class="classDesc" id="classData<%- i %>"><span class='editButton'>&nbsp;</span><%- userData.classesAndDescriptions[i].description %></div>
+        <div class="classDesc" id="classData<%- i %>"><span class='editButton' data-id="<%- i -%>">&nbsp;</span><span class='courseInfo'><%= userData.classesAndDescriptions[i].code %> - <%= userData.classesAndDescriptions[i].semester %></span><br/ >
+				<div id="description<%- i -%>" class='descriptionBox'><%= userData.classesAndDescriptions[i].description %></div></div>
         <% } %></li>
         <li>
           <div id="newClassArea">
@@ -58,13 +69,16 @@
         </li>
       </ul>
       <% } else { %>
-      None Added<br />
-      <span id="newClassArea">
-        <form id="newClassForm" onsubmit="AddClass(); return false">
-          <input type="text" id="newClass" />
-        </form>
-      </span>
-      <span id="addClass">Add Course</span>
+			<ul id="myClassList">
+				<li>
+					<div id="newClassArea">
+						<form id="newClassForm" onsubmit="AddClass(); return false">
+							<input type="text" id="newClass" />
+						</form>
+					</div>
+					<span id="addClass">Add Course</span>
+				</li>
+			</ul>
       <% } %>
     </div>
     
