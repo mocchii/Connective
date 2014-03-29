@@ -373,7 +373,7 @@ app.post("/editDesc", function (req, resp) {
         else {
           found.classesAndDescriptions[req.body.id].description=req.body.description;
           found.save();
-          resp.send("SUCCESS");
+          resp.send(JSON.stringify(found.classesAndDescriptions[req.body.id]));
         }
       }
     });
