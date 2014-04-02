@@ -60,7 +60,12 @@ var userSchema = mongoose.Schema({
 		code: String, // Class code like "CSCI 2200"
 		description:String // User's self-evaluation in the course
   }],
-  buddies: [String]
+  buddies: [String],
+  rating: Number,
+  ratingList: [{
+    user: String,
+    rating: Number
+  }]
 });
 
 var User = mongoose.model('User', userSchema);
@@ -179,7 +184,11 @@ app.post("/signup", function(req,res){
         password:passHash,
         confirmed:false,
         salt:salt,
-        classesAndDescriptions:[]
+        classesAndDescriptions:[],
+        buddies: [],
+        ratingList: [],
+        rating: -0.1,
+        ratingNum: 0
       });
       newUser.save();
       
@@ -319,13 +328,13 @@ app.post("/deleteClass", function (req, resp) {
 // Add class
 app.post("/addClass", function (req, resp) {
   if (!req.session.signedIn) {
-    resp.send("ERROR: You must be signed in to add a course. (No signedin session)");
+    resp.send("ERROR: You must be signed in to add a course.");
   }
   else if (req.session.uname!=req.body.user.toLowerCase()) { resp.send("ERROR: You can only add courses to your own profile."); }
   else {
     User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
       if (err || found==null) {
-        resp.send("ERROR: You must be signed in to add a course. (No DB entry found)");
+        resp.send("ERROR: You must be signed in to add a course.");
       }
       else {
         var success=true;
@@ -375,6 +384,54 @@ app.post("/editDesc", function (req, resp) {
           found.save();
           resp.send(JSON.stringify(found.classesAndDescriptions[req.body.id]));
         }
+      }
+    });
+  }
+});
+
+/* Add user rating (peer evaluation) */
+app.post("/rate", function (req, resp) {
+  if (!req.session.signedIn) {
+    resp.send("ERROR: You must be signed in to rate students.");
+  }
+  else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't rate yourself."); }
+  else if (req.body.rating>5 || req.body.rating<1) { resp.send("ERROR: Your rating must be between 1 and 5. No cheating!"); }
+  else {
+    User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
+      if (err || found==null) {
+        resp.send("ERROR: You must be signed in to rate students.");
+      }
+      else {
+        var success=true;
+        var uname=req.body.user.toLowerCase(), rating=req.body.rating;
+        User.findOne({uname_lower: uname}, function(err, found) {
+          if (err || found==null) {
+            resp.send("ERROR: The user you're trying to rate doesn't exist.");
+          }
+          else {
+            /* Insert rating into DB and get total rating */
+            var exists=false, total=0;
+            for (var i=0; i<found.ratingList.length; i++) {
+              var rated=found.ratingList[i];
+              if (rated.user==uname) {
+                rated.rating=rating;
+                total+=rating;
+                exists=true;
+              }
+              else { total+=rated.rating; }
+             }
+             if (!exists) {
+               found.ratingList.push({user: uname, rating:rating});
+             }
+             
+             /* Recalculate average rating */
+             found.rating=total/found.ratingList.length;
+             
+             /* Save and return */
+            found.save();
+            resp.send(JSON.stringify(found));
+          }
+        });
       }
     });
   }

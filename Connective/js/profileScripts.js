@@ -183,6 +183,50 @@ function AddClass() {
 
 var isAdding=false;
 var classNames;
+
+/* Update the star ratings */
+function UpdateRating(userData) {
+  var ratingFrac = userData.rating - Math.floor(userData.rating);
+  $(".star").each(function(ind, star) {
+    var i=$(star).attr("data-num")*1.0;
+    if (i<=Math.floor(userData.rating)) {
+      $(star).attr("class", "star fullStar");
+    } 
+    else if (i<=Math.floor(userData.rating+1) && ratingFrac>0) {
+      $(star).attr("class", "star halfStar");
+    }
+    else {
+      $(star).attr("class", "star noStar");
+    }
+  });
+}
+
+/* Send a rating */
+function SendRating(num) {
+  $.ajax("rate", {
+    type: "POST",
+    data: {
+      user: thisUser,
+      rating: num
+    },
+    complete: function(xhr, stat) {
+      var data=xhr.responseText;
+      if (stat<200 || stat>=300) { alert("Failed"); }
+      else if (data.substr(0,7)=="ERROR: ") {
+        alert(data.substr(7));
+      }
+      else {
+			
+			  /* On success, update the rating and show the thanks message */
+			  var response=JSON.parse(data);
+        UpdateRating(response);
+        $(".thanksRate").hide();
+        $(".thanksRate").show(200);
+      }
+    },
+  });
+}
+
 $(document).ready(function() {
   
   SetDatas(); // Set the data IDs
@@ -233,5 +277,10 @@ $(document).ready(function() {
     else {
       AddClass();
     }
+  });
+  
+  /* Set rating functionality */
+  $(".star").click(function() {
+    SendRating($(this).attr("data-num"));
   });
 });

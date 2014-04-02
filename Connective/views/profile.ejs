@@ -34,6 +34,23 @@
 			.descriptionBox {
 			  display:inline;
 			}
+      .star {
+        width: 16px;
+        height: 16px;
+        display:inline-block;
+        background-image:url(images/stars.png);
+        cursor:pointer;
+      }
+      .fullStar {
+        background-position:0px 0px;
+      }
+      .halfStar {
+        background-position:-16px 0px;
+      }
+      .noStar {
+        background-position:-32px 0px;
+      }
+      .thanksRate { display: none; }
     </style>
 
     <!-- jQueryUI styles for autocomplete use -->
@@ -47,8 +64,16 @@
     
   </head>
   <body>
-    <span class="title"><%- userData.username %></span>
+    <span class="title"><%- userData.username %></span><br />
     <div class="profileLeft">
+        <span id="rating">
+      <% var ratingFrac=userData.rating-Math.floor(userData.rating);
+      for (i=1; i<=5; i++) {
+      %><span data-num='<%- i -%>' class='star<% if (i<=Math.floor(userData.rating)) { %> fullStar <% }
+        else if (i<=Math.floor(userData.rating+1) && ratingFrac>0) { %> halfStar<% } else { %> noStar<% } %>'></span>
+      <% } %>
+      </span><span class="thanksRate">Thank you!</span><br />
+    
       <span class="header">Courses</span><br />
       <% if (userData.classesAndDescriptions.length>0) { %>
       <ul id="myClassList">
@@ -83,7 +108,6 @@
     </div>
     
     <div class="profileMid">
-    
     </div>
     
   </body>
