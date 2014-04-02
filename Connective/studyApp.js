@@ -70,6 +70,11 @@ var userSchema = mongoose.Schema({
 
 var User = mongoose.model('User', userSchema);
 
+/* Static file requests */
+app.get('/', function(req,res){  
+  res.redirect("signup");
+});
+
 app.use(express.static(__dirname));
 
 /* Confirmation of signup */
@@ -298,7 +303,7 @@ app.get("/profile", function(req, resp) {
   }
 });
 
-/* User manipulation -- adding, removing, changing classes, buddies, etc. */
+/* User manipulation -- adding, removing, changing classes, buddies, ratings, etc. */
 
 // Remove class
 app.post("/deleteClass", function (req, resp) {
@@ -364,7 +369,7 @@ app.post("/addClass", function (req, resp) {
   }
 });
 
-/* Edit class descriptions */
+// Edit class descriptions (self-evaluations)
 app.post("/editDesc", function (req, resp) {
   if (!req.session.signedIn) {
     resp.send("ERROR: You must be signed in to edit a course self-evaluation.");
@@ -389,7 +394,7 @@ app.post("/editDesc", function (req, resp) {
   }
 });
 
-/* Add user rating (peer evaluation) */
+// Add user rating (peer evaluation)
 app.post("/rate", function (req, resp) {
   if (!req.session.signedIn) {
     resp.send("ERROR: You must be signed in to rate students.");
@@ -413,15 +418,15 @@ app.post("/rate", function (req, resp) {
             var exists=false, total=0;
             for (var i=0; i<found.ratingList.length; i++) {
               var rated=found.ratingList[i];
-              if (rated.user==uname) {
+              if (rated.user==req.session.uname) {
                 rated.rating=rating;
-                total+=rating;
                 exists=true;
               }
-              else { total+=rated.rating; }
+              total+=rated.rating;
              }
              if (!exists) {
-               found.ratingList.push({user: uname, rating:rating});
+               found.ratingList.push({user: req.session.uname, rating:rating});
+							 total+=rating*1;
              }
              
              /* Recalculate average rating */
@@ -429,17 +434,17 @@ app.post("/rate", function (req, resp) {
              
              /* Save and return */
             found.save();
-            resp.send(JSON.stringify(found));
+						var returnObj={
+						  rating: found.rating,
+							total: total,
+							raters: found.ratingList
+						};
+            resp.send(JSON.stringify(returnObj));
           }
         });
       }
     });
   }
-});
-
-/* Static file requests */
-app.get('/', function(req,res){  
-  res.sendfile(__dirname + '/studyIndex.html');
 });
 
 /* Getting YACS data */
