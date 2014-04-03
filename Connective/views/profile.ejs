@@ -81,7 +81,7 @@
         <li><span class="className" data-id="<%- i %>"><%= userData.classesAndDescriptions[i].className %></span> &nbsp; <%
           if (isMe) {
         %><span class="delete" data-id="<%- i %>"><img src="images/deleteIcon.png" /></span><% } %>
-        <div class="classDesc" id="classData<%- i %>"><% if (isMe) { %><span class='editButton' data-id="<%- i -%>">&nbsp;</span><% } %><span class='courseInfo'><%= userData.classesAndDescriptions[i].code %> - <%= userData.classesAndDescriptions[i].semester %></span><br/ >
+        <div class="classDesc" id="classData<%- i %>"><% if (isMe) { %><span class='editButton' data-id="<%- i -%>">&nbsp;</span><% } %><span class='courseInfo'><%= userData.classesAndDescriptions[i].code %>-<%= userData.classesAndDescriptions[i].section %> - <%= userData.classesAndDescriptions[i].semester %></span><br/ >
 				<div id="description<%- i -%>" class='descriptionBox'><%= userData.classesAndDescriptions[i].description %></div></div>
         <% } %></li>
 				<% if (isMe) { %>

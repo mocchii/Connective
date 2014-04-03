@@ -161,7 +161,7 @@ function AddClass() {
         var dataID=$("#myClassList").children().length-1;
         li.innerHTML="<span class='className' data-id='"+dataID+"'>"+response.className+"</span> &nbsp;";
         li.innerHTML+="<span class='delete' data-id='"+dataID+"'><img src='images/deleteIcon.png' /></span>";
-        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton' data-id='"+dataID+"'>&nbsp;</span><span class='courseInfo'>"+response.code+" - "+response.semester+"</span><br /><div id='description"+dataID+"' class='descriptionBox'></div></div>";
+        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton' data-id='"+dataID+"'>&nbsp;</span><span class='courseInfo'>"+response.code+"-"+response.semester+" - "+response.semester+"</span><br /><div id='description"+dataID+"' class='descriptionBox'></div></div>";
         $(li).attr("data-id", dataID);
 				
 				if (dataID>=0) {
