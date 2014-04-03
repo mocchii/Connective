@@ -1,0 +1,188 @@
+<!-- <!DOCTYPE HTML>
+<html>
+
+<head>
+</head>
+<body>
+</body> -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" />
+
+<script type="text/javascript" href="http://twitter-bootstrap.node1.zygote.cc/js/bootstrap-dropdown.js"></script>
+<script>
+	function isNumberKey(evt)
+      {
+         var charCode = (evt.which) ? evt.which : event.keyCode
+         if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+
+         return true;
+      }
+</script>
+
+
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <!-- <div class="container">
+	<div class="navbar-header">
+	  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+		<span class="icon-bar"></span>
+	  </button>
+	  <a class="navbar-brand" href="#">Project name</a>
+	</div> -->
+	<div class="navbar-header">
+		<a class="navbar-toggle"
+			href='profile?user=<%- userData.username %>'>my profile</a>
+	</div>
+	
+	
+	
+	
+	<div class="navbar-collapse collapse">
+	
+	
+		<ul class="nav" style="float:left">
+			<li><a style="font-size:20pt" class="navbar-brand" href="/">Connective</a></li>
+		</ul>
+	
+	  <form class="navbar-form navbar-middle" role="form" action="/searchResults" method="post"> <!-- navbar-right -->
+	  
+	    <div class="form-group">
+		  <input id="classNameBox" style="width:400px" type="text" placeholder="Class Name" name="className" class="form-control"><!-- class form-control -->
+		</div>
+	  
+		<div class="form-group">
+	    <div class="dropdown">
+		  
+		  
+				
+				<a href="#" style="background:#E0E0E0" class="dropdown-toggle btn btn-default" data-toggle="dropdown">Advanced Search<b class="caret"></b></a>
+                <ul class="dropdown-menu" style="width:300px">
+					<div style="margin:5px">
+						<input id="sectionBox" name="section" onkeypress="return isNumberKey(event)" style="width:130px;margin:5px" 
+							type="text" placeholder="Section Number" class="form-control">
+						<select id="semesterSelect" style="width:140px" name="semester" class="form-control">
+							<option value="any">Semester</option>
+						</select><br />
+						<div style="text-align:center; width:100%">OR</div>
+					<label style="font-weight:normal;margin:5px">
+					  <input id="justRegisteredClassesCheckBox" name="justRegisteredClasses" type="checkbox" class="checkbox"> Just show everyone in my classes and sections
+					</label>
+					</div>
+					<div style="margin:5px; border-top:1px solid #666666; padding-top:5px">
+						<span style="color:black">Peer rating of at least:</span>
+						<select id="ratingLimit" style="width:80px" name="ratingLimit" class="form-control">
+						  <option value=""></option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+						</select>
+						<span style="color:black"> stars</span>
+					</div>
+					
+					<input id="userNameSearchBox"  style="margin:5px" 
+							type="text" placeholder="Username" name="userName" class="form-control">
+                </ul>
+		</div>
+		</div>
+	    
+		
+		
+		<button id="searchButton" type="submit" class="btn btn-success">Search for other users</button>
+		<ul class="nav" style="float:right">
+			<li><a style="font-size:20pt" class="navbar-brand" href="profile?user=<%= signedInAs %>"><%= signedInAs %></a></li>
+		</ul>
+	  </form>
+	</div><!--/.navbar-collapse -->
+  </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="Bootstrap/js/bootstrap.min.js"></script>
+
+<script>
+$(document).ready(function(){
+	$("ul.dropdown-menu").on("click", function(e) {
+		e.stopPropagation();
+	});
+	
+	//should we do this stuff with ejs?
+	$.ajax({url: "/allClassListings?excludeSections=true", async: false, success: function(data) {
+		//classNames variable name is used for autocomplete on profile page--don't use that!
+		classNamesForSearchHeader=data.classes;
+		$('#classNameBox').autocomplete({source:classNamesForSearchHeader
+		});
+		function sortSemestersByDate(s1,s2){
+			var year1 = parseInt(s1.substr(s1.length-4));
+			var year2 = parseInt(s1.substr(s2.length-4));
+			if (year1 > year2)
+				return 1;
+			else if (year1 < year2)
+				return -1;
+			else
+			{
+				var season1 = s1.substr(0, s1.indexOf(" "));
+				var season2 = s2.substr(0, s2.indexOf(" "));
+				
+				var season1Val = 1;
+				if (season1 == "Summer")
+					season1Val = 2;
+				else if (season1 == "Fall")
+					season1Val = 3;
+					
+				var season2Val = 1;
+				if (season2 == "Summer")
+					season2Val = 2;
+				else if (season2 == "Fall")
+					season2Val = 3;
+					
+				if (season1Val > season2Val)
+					return 1;
+				else if (season1Val < season2Val)
+					return -1;
+				else
+					return 0;
+			}
+			
+		}
+		
+		data.semesters.sort(sortSemestersByDate);
+		
+		for (var i = 0; i < data.semesters.length; i++)
+			$('#semesterSelect').append("<option value='" + data.semesters[i] + "'>" + data.semesters[i] + "</option>");
+	}});
+		
+	/* Why are you making a form submission in jQuery instead of just...a submission?
+	$('#searchButton').on("click",function(e){
+		e.preventDefault();
+		console.log("clicked search button");
+		var fullURL = "searchResults?"
+			+ "&className=" + $('#classNameBox').val()
+			+ "&section=" + $('#sectionBox').val()
+			+ "&justRegisteredClasses=" + $('#justRegisteredClassesCheckBox').is(":checked")
+			+ "&ratingLimit=" + document.getElementById("ratingLimit").value
+			+ "&userName=" + $('#userNameSearchBox').val()
+			+ "&semester=" + document.getElementById("semesterSelect").value;
+		
+		//console.log("full URL is " + fullURL);
+		window.location.href = fullURL;
+	}); */
+});
+</script>
+
+
+
+
+
+	
+
+<!-- </html> -->

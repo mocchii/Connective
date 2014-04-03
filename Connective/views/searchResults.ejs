@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Users who meet these criteria</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" >
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+   <style type="text/css">
+
+	.ui-autocomplete.ui-menu
+
+	{
+
+	filter: alpha(opacity=1);
+
+	opacity: 1;
+
+	}
+
+  </style>
+
+</head>
+<body style="padding-top:90px">
+
+		
+
+		<%- include searchheader.ejs %>
+		
+		
+
+		<% var indicesSectionsAndClassNames = [] %>
+
+		
+		
+	
+	
+	<div style="margin:0px 0px 0px 40px">
+		<p style="font-size:14pt;color:#000099">
+			Users who meet these criteria:
+		</p>
+		 <ul id="placeToPutPeople" class="list-group" style="width:500px;height:500px;overflow:scroll"><!-- use pull-left in class?-->
+		 <% for (var i=0; i<users.length; i++) { %>
+		 <li class="list-group-item">
+		 <a class="btn btn-default" style="color:blue;font-size:16pt" 
+				href="profile?user=<%-users[i].username%>"> <%- users[i].username %></a>
+		<% for (var p in users[i].classesAndDescriptions) {
+				if (isNaN(p)) { continue; }
+		%>
+			<p> 
+				<%- users[i].classesAndDescriptions[p].code %>-<%- users[i].classesAndDescriptions[p].section %>: 
+				<%- users[i].classesAndDescriptions[p].className %> -- <%- users[i].classesAndDescriptions[p].semester %> 
+			</p>
+			<p> <%- users[i].classesAndDescriptions[p].description %> </p>
+		<% } %>
+		 </li>
+		 <% } %>
+		 
+		   
+		  
+		</ul>
+    </div>
+	
+	
+	
+	
+	
+	
+	
+	
+	<script>
+		$(document).ready(function(){
+		
+			
+		
+			//document.getElementsByClassName("classCheckbox")
+			var listItems = document.getElementsByClassName("list-group-item");
+			
+		
+		});
+	</script>
+</body>
+</html>

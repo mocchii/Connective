@@ -86,7 +86,8 @@ app.get("/confirmSignup", function(req, resp) {
       resp.render("confirmPage", {
         error: 1,
         errorText: "The specified user information...doesn't belong to any account that needs to be confirmed. Did you copy it correctly from your confirmation E-Mail?",
-        statusText: ""
+        statusText: "",
+				signedInAs: req.session.uname
       });
     }
     else if (found.confirmed) {
@@ -94,7 +95,8 @@ app.get("/confirmSignup", function(req, resp) {
       resp.render("confirmPage", {
         error: 2,
         statusText: "Good news--the specified user has already been confirmed! You can just sign in and use Connective now! :)",
-        errorText: ""
+        errorText: "",
+				signedInAs: req.session.uname
       });
     }
     
@@ -108,7 +110,8 @@ app.get("/confirmSignup", function(req, resp) {
       resp.render("confirmPage", {
         error:0,
         errorText:"",
-        statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='profile?user="+found.username+"'>Click here to start setting up your Connective profile.</a>"
+        statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='profile?user="+found.username+"'>Click here to start setting up your Connective profile.</a>",
+				signedInAs: req.session.uname
       });
     }
     
@@ -164,7 +167,8 @@ app.post("/signup", function(req,res){
           errorMsg: errorMess,
           username: uname,
           error: error,
-          email: req.body.email
+          email: req.body.email,
+					signedInAs: req.session.uname
       });
      }
      
@@ -213,7 +217,8 @@ app.post("/signup", function(req,res){
         else {
           /* When E-Mail is sent, render the "E-Mail sent, please confirm" page */
           res.render("confirm", {
-            email: req.body.email
+            email: req.body.email,
+						signedInAs: req.session.uname
           });
           console.log("Message sent: ", resp.message);
         }
@@ -236,14 +241,16 @@ app.post("/signin", function(req, res) {
       res.render("signin", {
         username: req.body.userName,
         error: 1,
-        errorText: "There's no account with the username "+req.body.userName+". Did you type it correctly?"
+        errorText: "There's no account with the username "+req.body.userName+". Did you type it correctly?",
+				signedInAs: req.session.uname
       });
     }
     else if (!found.confirmed) {
       res.render("notconfirmed", {
         username: req.body.userName,
         error:2,
-        errorText: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in."
+        errorText: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in.",
+				signedInAs: req.session.uname
       });
     }
     else {
@@ -260,7 +267,8 @@ app.post("/signin", function(req, res) {
         res.render("signin", {
           username:req.body.userName,
           error:4,
-          errorText: "The password you entered was not corrrect. Make sure capslock is off."
+          errorText: "The password you entered was not corrrect. Make sure capslock is off.",
+					signedInAs: req.session.uname
         });
       }
     }
@@ -272,13 +280,13 @@ app.get("/signin", function(req, resp) {
     resp.redirect("/myProfile");
   }
   else {
-    resp.render("signin");
+    resp.render("signin", {signedInAs: req.session.uname});
   }
 });
 
 app.get("/signout", function(req, resp) {
   req.session.destroy();
-  resp.render("signin");
+  resp.render("signin", {signedInAs: req.session.uname});
 });
 
 /* Profiles */
@@ -296,6 +304,7 @@ app.get("/profile", function(req, resp) {
         resp.render("profile", {
           session: req.sessionID,
           userData: found,
+					signedInAs: req.session.uname,
           isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key)
         });
       }
@@ -447,6 +456,182 @@ app.post("/rate", function (req, resp) {
   }
 });
 
+app.post("/searchResults", function(req,resp) {
+	
+	/* Make sure this user is signed in */
+	if (!req.session.signedIn) {
+    resp.send("ERROR: You must be signed in to use the search.");
+		return;
+  }
+  User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, thisUser) {
+		if (err || thisUser==null) {
+			resp.send("ERROR: You must be signed in to use the search.");
+			return;
+		}
+
+		/* Set the array to search for only your classes/sections, or the given one, depending on the checkbox */
+		var classes=[];	
+		if (req.body.justRegisteredClasses) {
+			var tempClasses=thisUser.classesAndDescriptions;
+			console.log("There are "+tempClasses.length+" classes");
+			for (var i in tempClasses) {
+			  if (!isNaN(i)) {
+					classes.push(tempClasses[i].className);
+				}
+			}
+		}
+		else {
+		  classes=[req.body.className];
+		}
+		
+		/* Build up the search object with the right class name */
+		var searchObj={
+		  "classesAndDescriptions": {
+			  $elemMatch: {
+					"className": {
+					  $in: classes
+					}
+				}
+			}
+		};
+		
+		if (req.body.ratingLimit!=null && req.body.ratingLimit!="") {
+		  searchObj.rating={
+			  $gte: req.body.ratingLimit*1
+			}
+		}
+		
+		/* Search */
+		User.find(searchObj, function(err,allUsers){
+		  if (typeof allUsers=="undefined" || allUsers==null) {
+			  resp.send("Error: "+err+"<br />JSON: "+JSON.stringify(searchObj));
+				return;
+			}
+			function sortByClass(pair1,pair2) {
+				return 0; // Bypass this for now until we've gotten the details figured out.
+				
+				if (pair1.classAndDescriptions.className > pair2.classAndDescriptions.className)
+					return 1;
+				else if (pair1.classAndDescriptions.className < pair2.classAndDescriptions.className)
+					return -1;
+				else 
+					return 0;
+			}	
+		
+/*			var userClassPairs = [];
+			
+			req.body.userName = req.body.userName.toLowerCase();
+			
+			if (req.body.justRegisteredClasses == "true")
+			{
+				for (var i = 0; i < allUsers.length; i++)
+				{
+					if (thisUser.uname_lower == allUsers[i].uname_lower)
+						continue;
+					if (req.body.userName != "" && req.body.userName != allUsers[i].uname_lower)
+						continue;
+						
+					for (var j = 0; j < allUsers[i].classesAndDescriptions.length; j++)
+						//if (thisUser.classesAndDescriptions.map(  allUsers[i].classesAndDescriptions[j].className
+						for (var k = 0; k < thisUser.classesAndDescriptions.length; k++)
+							if (thisUser.classesAndDescriptions[k].className == allUsers[i].classesAndDescriptions[j].className
+									&& thisUser.classesAndDescriptions[k].section == allUsers[i].classesAndDescriptions[j].section
+									&& thisUser.classesAndDescriptions[k].semester == allUsers[i].classesAndDescriptions[j].semester)
+								//if (req.body.userName == "" || req.body.userName == allUsers[i].uname_lower)
+									userClassPairs.push(
+											{userName:allUsers[i].username,
+												classAndDescription:allUsers[i].classesAndDescriptions[j]});
+				}
+					
+				userClassPairs.sort(sortByClass);
+			
+				
+			} 
+			
+			else {
+				for (var i = 0; i < allUsers.length; i++)
+				{
+					var user = allUsers[i];
+					console.log(user);
+					if (req.body.userName != "" && req.body.userName != allUsers[i].uname_lower)
+						continue;
+					
+					for (var j = 0; j < user.classesAndDescriptions.length; j++)
+					{
+						//var showUser = true;
+						//if (req.body.className)
+							//	showUser = false;
+						if (req.body.semester != "any" && req.body.semester != user.classesAndDescriptions[j].semester)
+							continue;
+						
+						if (req.body.className != "" && req.body.section != "")
+						{
+							
+							if (user.classesAndDescriptions[j].className == req.body.className 
+									&& user.classesAndDescriptions[j].section == req.body.section)
+								//showUser = true;
+								userClassPairs.push({userName:user.username,
+												classAndDescription:user.classesAndDescriptions[j]});
+						}
+						else if (req.body.className != "")
+						{
+							console.log("user.classesAndDescriptions[j].className is " + user.classesAndDescriptions[j].className);
+							if (user.classesAndDescriptions[j].className == req.body.className)
+								//showUser = true;
+								userClassPairs.push({userName:user.username,
+												classAndDescription:user.classesAndDescriptions[j]});
+						}else
+							userClassPairs.push({userName:allUsers[i].username,
+												classAndDescription:allUsers[i].classesAndDescriptions[j]});
+						
+					}
+					
+				}
+			}
+			//console.log("userClassPairs: " + userClassPairs);
+			for (var i = 0; i < userClassPairs.length; i++)
+			{
+				console.log("userName is " + userClassPairs[i].userName);
+				console.log("classAndDescription is " + userClassPairs[i].classAndDescription);
+			}
+			*/
+			
+			/* Filter by class section if needed, as well as filtering out nonmatching classes */
+			if (req.body.section!=null && req.body.section!="") {
+				var sect=req.body.section.toString();
+				while (sect.length<2) { sect="0"+sect; }
+			}
+			else { var sect=null; }
+			
+			for (var i  in allUsers) {
+				var theClasses=allUsers[i].classesAndDescriptions;
+				var isin=false;
+				for (var c in theClasses) {
+					if (classes.indexOf(theClasses[c].className)<0) {
+						theClasses.splice(c, 1);
+					}
+					else if (sect==null || theClasses[c].section==sect) {
+						isin=true;
+						break;
+					}
+				}
+				if (!isin) {
+					allUsers.splice(i, 1);
+				}
+			}
+			
+			allUsers.sort(sortByClass);
+			
+			resp.render("searchResults", {
+				userData: thisUser,
+				users:allUsers,
+				signedInAs: req.session.uname
+			});
+			
+		});
+	});
+});
+
 /* Getting YACS data */
 app.get("/courses",function(request,response){
   getYacsData(request,response,"course");
@@ -456,13 +641,32 @@ app.get("/courses",function(request,response){
 app.get("/allClassListings",function(request,response){
   response.writeHead(200,{"Content-type":"application/json"});
   yacs.getAllClassListings(function(list){
-    response.write(JSON.stringify(list, null, '\t'));
+    var classesObject = {classes:[],semesters:[]};
+	if (request.query.excludeSections == "true")
+	{
+		for (var i = 0; i < list.classes.length; i++)
+		{
+			var classWithoutSection = list.classes[i].substr( list.classes[i].indexOf(":")+2);
+			var classWithoutSectionOrSemester = classWithoutSection.substr(0, classWithoutSection.indexOf(" -- "));
+			var semester = classWithoutSection.substr( classWithoutSection.indexOf(" -- ") + 4);
+			if (classesObject.classes.indexOf(classWithoutSectionOrSemester) == -1)
+				classesObject.classes.push(classWithoutSectionOrSemester);
+			if (classesObject.semesters.indexOf(semester) == -1)
+			{
+				console.log(semester);
+				classesObject.semesters.push(semester);
+			}
+		}
+	}
+	else
+		classesObject = list;
+    response.write(JSON.stringify(classesObject, null, '\t'));
     //console.log(list);
     response.end();
   });
 });
 
-/* Messaging system/sockets of all sorts */
+/* Messaging system/sockets of all sorts -- Not implemented yet */
 io.sockets.on('connection', function(socket){
   socket.on('send message', function(data){
     io.sockets.emit('new message',data);
