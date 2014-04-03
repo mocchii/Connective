@@ -286,7 +286,7 @@ app.get("/signin", function(req, resp) {
 
 app.get("/signout", function(req, resp) {
   req.session.destroy();
-  resp.render("signin", {signedInAs: req.session.uname});
+  resp.render("signin");
 });
 
 /* Profiles */
@@ -517,84 +517,6 @@ app.post("/searchResults", function(req,resp) {
 				else 
 					return 0;
 			}	
-		
-/*			var userClassPairs = [];
-			
-			req.body.userName = req.body.userName.toLowerCase();
-			
-			if (req.body.justRegisteredClasses == "true")
-			{
-				for (var i = 0; i < allUsers.length; i++)
-				{
-					if (thisUser.uname_lower == allUsers[i].uname_lower)
-						continue;
-					if (req.body.userName != "" && req.body.userName != allUsers[i].uname_lower)
-						continue;
-						
-					for (var j = 0; j < allUsers[i].classesAndDescriptions.length; j++)
-						//if (thisUser.classesAndDescriptions.map(  allUsers[i].classesAndDescriptions[j].className
-						for (var k = 0; k < thisUser.classesAndDescriptions.length; k++)
-							if (thisUser.classesAndDescriptions[k].className == allUsers[i].classesAndDescriptions[j].className
-									&& thisUser.classesAndDescriptions[k].section == allUsers[i].classesAndDescriptions[j].section
-									&& thisUser.classesAndDescriptions[k].semester == allUsers[i].classesAndDescriptions[j].semester)
-								//if (req.body.userName == "" || req.body.userName == allUsers[i].uname_lower)
-									userClassPairs.push(
-											{userName:allUsers[i].username,
-												classAndDescription:allUsers[i].classesAndDescriptions[j]});
-				}
-					
-				userClassPairs.sort(sortByClass);
-			
-				
-			} 
-			
-			else {
-				for (var i = 0; i < allUsers.length; i++)
-				{
-					var user = allUsers[i];
-					console.log(user);
-					if (req.body.userName != "" && req.body.userName != allUsers[i].uname_lower)
-						continue;
-					
-					for (var j = 0; j < user.classesAndDescriptions.length; j++)
-					{
-						//var showUser = true;
-						//if (req.body.className)
-							//	showUser = false;
-						if (req.body.semester != "any" && req.body.semester != user.classesAndDescriptions[j].semester)
-							continue;
-						
-						if (req.body.className != "" && req.body.section != "")
-						{
-							
-							if (user.classesAndDescriptions[j].className == req.body.className 
-									&& user.classesAndDescriptions[j].section == req.body.section)
-								//showUser = true;
-								userClassPairs.push({userName:user.username,
-												classAndDescription:user.classesAndDescriptions[j]});
-						}
-						else if (req.body.className != "")
-						{
-							console.log("user.classesAndDescriptions[j].className is " + user.classesAndDescriptions[j].className);
-							if (user.classesAndDescriptions[j].className == req.body.className)
-								//showUser = true;
-								userClassPairs.push({userName:user.username,
-												classAndDescription:user.classesAndDescriptions[j]});
-						}else
-							userClassPairs.push({userName:allUsers[i].username,
-												classAndDescription:allUsers[i].classesAndDescriptions[j]});
-						
-					}
-					
-				}
-			}
-			//console.log("userClassPairs: " + userClassPairs);
-			for (var i = 0; i < userClassPairs.length; i++)
-			{
-				console.log("userName is " + userClassPairs[i].userName);
-				console.log("classAndDescription is " + userClassPairs[i].classAndDescription);
-			}
-			*/
 			
 			/* Filter by class section if needed, as well as filtering out nonmatching classes */
 			if (req.body.section!=null && req.body.section!="") {
