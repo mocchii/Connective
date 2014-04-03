@@ -500,6 +500,9 @@ app.post("/searchResults", function(req,resp) {
 			  $gte: req.body.ratingLimit*1
 			}
 		}
+    if (req.body.userName!=null && req.body.userName!="") {
+      searchObj.uname_lower=req.body.userName.toLowerCase();
+    }
 		
 		/* Search */
 		User.find(searchObj, function(err,allUsers){
