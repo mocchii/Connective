@@ -61,6 +61,7 @@ var userSchema = mongoose.Schema({
 		description:String // User's self-evaluation in the course
   }],
   buddies: [String],
+	requests: [String],
   rating: Number,
   ratingList: [{
     user: String,
@@ -284,6 +285,7 @@ app.get("/signin", function(req, resp) {
   }
 });
 
+/* Signing out */
 app.get("/signout", function(req, resp) {
   req.session.destroy();
   resp.render("signin");
