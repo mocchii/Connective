@@ -90,7 +90,7 @@ function startSearch(app, User, domain) {
 				
 				allUsers.sort(sortByClass);
 				
-				resp.render("searchResults", {
+				resp.render("Search/searchResults", {
 					userData: thisUser,
 					users:allUsers,
 					signedInAs: req.session.uname

@@ -5,13 +5,13 @@ var express = require('express'),
   io = require('socket.io').listen(server),
   users = [],
   mongoose = require('mongoose'),
-  yacs = require('./yacs.js'),
+  yacs = require('./custom_modules/yacs.js'),
   mailer=require("nodemailer"),
   crypto=require("crypto"),
-	admin=require("./admin"),
-	profile=require("./profile"),
-	search=require("./search"),
-	messaging=require("./messaging");
+	admin=require("./custom_modules/admin"),
+	profile=require("./custom_modules/profile"),
+	search=require("./custom_modules/search"),
+	messaging=require("./custom_modules/messaging");
 
 /* Setup the server to listen on port 80 (Web traffic port), allow it to parse POSTED body data, and let it render EJS pages */
 server.listen(80);

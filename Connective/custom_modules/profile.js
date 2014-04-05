@@ -11,7 +11,7 @@ function startProfile(app, User, domain) {
 					resp.send("User does not exist.");
 				}
 				else {
-					resp.render("profile", {
+					resp.render("Profile/profile", {
 						session: req.sessionID,
 						userData: found,
 						signedInAs: req.session.uname,

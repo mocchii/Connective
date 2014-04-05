@@ -5,7 +5,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 		User.findOne({username:query.user, password:query.confirmID}, function(error, found) {
 			if (found==null) {
 				/* If a user with that info hasn't registered, say so on the confirmation page. */
-				resp.render("confirmPage", {
+				resp.render("Admin/confirmPage", {
 					error: 1,
 					errorText: "The specified user information...doesn't belong to any account that needs to be confirmed. Did you copy it correctly from your confirmation E-Mail?",
 					statusText: "",
@@ -14,7 +14,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 			}
 			else if (found.confirmed) {
 				/* If the user matching the information has already confirmed, say so on the confirmation page. */
-				resp.render("confirmPage", {
+				resp.render("Admin/confirmPage", {
 					error: 2,
 					statusText: "Good news--the specified user has already been confirmed! You can just sign in and use Connective now! :)",
 					errorText: "",
@@ -29,7 +29,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				req.session.signedIn=true;
 				req.session.key=found.password;
 				req.session.uname=found.username.toLowerCase();
-				resp.render("confirmPage", {
+				resp.render("Admin/confirmPage", {
 					error:0,
 					errorText:"",
 					statusText: "Thanks! You're all confirmed and ready to go.<br /><a href='profile?user="+found.username+"'>Click here to start setting up your Connective profile.</a>",
@@ -85,7 +85,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 			/* If there are errors, show the signup page again, but with the error information */
 			if (error>0) {
 				errorMess+="</ul>";
-				res.render("signup", {
+				res.render("Admin/signup", {
 						errorMsg: errorMess,
 						username: uname,
 						error: error,
@@ -138,7 +138,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 					}
 					else {
 						/* When E-Mail is sent, render the "E-Mail sent, please confirm" page */
-						res.render("confirm", {
+						res.render("Admin/confirm", {
 							email: req.body.email,
 							signedInAs: req.session.uname
 						});
@@ -151,7 +151,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 
 	/* Blank signup page before anything's submitted */
 	app.get("/signup", function(req, resp) {
-		resp.render("signup", {
+		resp.render("Admin/signup", {
 			username: ""
 		});
 	});
@@ -160,7 +160,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 	app.post("/signin", function(req, res) {
 		User.findOne({uname_lower:req.body.userName.toLowerCase()}, function(error, found) {
 			if (found==null) {
-				res.render("signin", {
+				res.render("Admin/signin", {
 					username: req.body.userName,
 					error: 1,
 					errorText: "There's no account with the username "+req.body.userName+". Did you type it correctly?",
@@ -168,7 +168,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				});
 			}
 			else if (!found.confirmed) {
-				res.render("notconfirmed", {
+				res.render("Admin/signin", {
 					username: req.body.userName,
 					error:2,
 					errorText: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in.",
@@ -186,7 +186,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 					res.redirect("/profile?user="+found.username);
 				}
 				else {
-					res.render("signin", {
+					res.render("Admin/signin", {
 						username:req.body.userName,
 						error:4,
 						errorText: "The password you entered was not corrrect. Make sure capslock is off.",
@@ -202,14 +202,14 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 			resp.redirect("/myProfile");
 		}
 		else {
-			resp.render("signin", {signedInAs: req.session.uname});
+			resp.render("Admin/signin", {signedInAs: req.session.uname});
 		}
 	});
 
 	/* Signing out */
 	app.get("/signout", function(req, resp) {
 		req.session.destroy();
-		resp.render("signin");
+		resp.render("Admin/signin");
 	});
 }
 module.exports.startAdmin=startAdmin;
