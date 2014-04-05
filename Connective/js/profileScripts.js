@@ -227,8 +227,35 @@ function SendRating(num) {
   });
 }
 
+function SendRequest() {
+  $.ajax("request", {
+    type: "POST",
+    data: {
+      user: thisUser
+    },
+    complete: function(xhr, stat) {
+      var data=xhr.responseText;
+      if (stat<200 || stat>=300) { alert("Failed"); }
+      else if (data.substr(0,7)=="ERROR: ") {
+        alert(data.substr(7));
+      }
+      else {
+			
+			  /* On success, update the class of the button and show the success message */
+        $("#friendReq").unbind("click").addClass("disabled");
+        $(".reqSent").hide().show(200);
+      }
+    },
+  });
+}
+
+/* Initializers */
 $(document).ready(function() {
   
+	$("#friendReq:not(.disabled)").unbind("click").click(function() {
+		SendRequest();
+	});
+	
   SetDatas(); // Set the data IDs
   
   $("#newClass").attr("disabled", true).val("Loading course list..."); // Disable the New Class box while we load the course list

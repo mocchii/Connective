@@ -1,5 +1,65 @@
+function startBuddyList(app, User, domain) {
+  // Send a connection request
+	app.post("/request", function (req, resp) {
+		if (!req.session.signedIn) {
+			resp.send("ERROR: You must be signed in to request connections.");
+		}
+		else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't request a connection with yourself."); }
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send("ERROR: You must be signed in to request connections.");
+				}
+				else {
+					var success=true;
+					var uname=req.body.user.toLowerCase();
+					User.findOne({uname_lower: uname}, function(err, found) {
+						if (err || found==null) {
+							resp.send("ERROR: The user you're trying to connect with doesn't exist.");
+						}
+						else {
+							if (found.requests.indexOf(req.session.uname)>=0 || found.buddies.indexOf(req.session.uname)>=0) {
+							  resp.send("ERROR: You've already sent this user a connection request.");
+							}
+							else {
+							  found.requests.push({username: req.session.uname, seen: false});
+								found.save();
+								resp.send("{}");
+							}
+						}
+					});
+				}
+			});
+		}
+	});
+
+	// Get notifications -- this is only done by the app, hence why it only returns JSON.
+	app.get("/notifications", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send('{error: "You must be signed in to check noifications."}');
+		}
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send('{error: "You must be signed in to check notifications."}');
+				}
+				else {
+				  var returnObj={};
+					returnObj.requests=me.requests;
+					
+					// Space for new notification types to be processed here.
+					
+					resp.send(JSON.stringify(returnObj));
+				}
+			});
+		}
+	});
+}
+
 function startProfile(app, User, domain) {
 	/* Profiles */
+	startBuddyList(app, User, domain);
+	
 	app.get("/profile", function(req, resp) {
 		var un=req.query.user.toLowerCase();
 		if (un=="") {

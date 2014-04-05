@@ -1,8 +1,2 @@
-Admin.js:
-ConfirmSignup, Signup, Signin, Signout
-
-Profile.js:
-Profile, DeleteClass, AddClass, EditDesc, Rate
-
 Search.js:
 SearchResults

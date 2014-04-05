@@ -16,8 +16,18 @@
     /*font-size: 62.5%;*/
     z-index:100000;
   } 
+	.requestItem {
+	  padding:4px;
+		border:1px solid #555555;
+		background-color:#ddf3ff;
+	}
+	.seen {
+	  background-color:#ffffff;
+	}
 </style>
-<script type="text/javascript" href="http://twitter-bootstrap.node1.zygote.cc/js/bootstrap-dropdown.js"></script>
+
+<script type="text/javascript" src="http://twitter-bootstrap.node1.zygote.cc/js/bootstrap-dropdown.js"></script>
+<script type="text/javascript" src="js/headerScripts.js"></script>
 <script>
 	function isNumberKey(evt)
       {
@@ -28,7 +38,6 @@
          return true;
       }
 </script>
-
 
 <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <!-- <div class="container">
@@ -103,7 +112,10 @@
 		
 		<button id="searchButton" type="submit" class="btn btn-success">Search for other users</button>
 		<ul class="nav" style="float:right">
-			<li><a style="font-size:20pt" class="navbar-brand" href="profile?user=<%= signedInAs %>"><%= signedInAs %></a></li>
+			<li>
+			<% if (typeof signedInAs!="undefined") { %>
+			  <a style="font-size:20pt" class="navbar-brand" href="profile?user=<%= signedInAs %>"><%= signedInAs %></a></li>
+			<% } %>
 		</ul>
 	  </form>
 	</div><!--/.navbar-collapse -->

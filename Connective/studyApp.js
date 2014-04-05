@@ -65,7 +65,10 @@ var userSchema = mongoose.Schema({
 		description:String // User's self-evaluation in the course
   }],
   buddies: [String],
-	requests: [String],
+	requests: [{
+		username: String,
+		seen: Boolean
+	}],
   rating: Number,
   ratingList: [{
     user: String,
