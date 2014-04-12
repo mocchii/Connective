@@ -22,7 +22,7 @@ function startBuddyList(app, User, domain) {
 							  resp.send("ERROR: You've already sent this user a connection request.");
 							}
 							else {
-							  found.requests.push({username: req.session.uname, seen: false});
+							  found.requests.push({username: me.username, seen: false});
 								found.save();
 								resp.send("{}");
 							}
@@ -33,8 +33,8 @@ function startBuddyList(app, User, domain) {
 		}
 	});
 
-	// Get notifications -- this is only done by the app, hence why it only returns JSON.
-	app.get("/notifications", function(req, resp) {
+	// Get connections notifications -- this is only done by the app, hence why it only returns JSON.
+	app.get("/connectionNotices", function(req, resp) {
 		if (!req.session.signedIn) {
 			resp.send('{error: "You must be signed in to check noifications."}');
 		}
@@ -45,12 +45,57 @@ function startBuddyList(app, User, domain) {
 				}
 				else {
 				  var returnObj={};
+					returnObj.error="";
 					returnObj.requests=me.requests;
 					
 					// Space for new notification types to be processed here.
 					
 					resp.send(JSON.stringify(returnObj));
 				}
+			});
+		}
+	});
+	
+	// Accept Connection requests
+	app.post("/accept", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send("ERROR: You must be signed in to accept Connection requests.");
+		}
+		else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't accept a Connection from yourself."); }
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send("ERROR: You must be signed in to accept Connection requests.");
+				}
+				else {
+					var success=true;
+					var uname=req.body.user.toLowerCase();
+					User.findOne({uname_lower: uname}, function(err, found) {
+						if (err || found==null) {
+							resp.send("ERROR: The user you're trying to accept a Connection from doesn't exist.");
+						}
+						
+						else {
+							var namemap=me.requests.map(function(user) { return user.username; });
+							var ind=namemap.indexOf(found.username);
+							if (ind<0) {
+								resp.send("ERROR: You have no Connection requests from user "+found.username);
+							}
+							else {
+								me.requests.splice(ind, 1);
+								me.buddies.push(found.username);
+								me.save();
+								
+								found.buddies.push(me.username);
+								found.save();
+								
+								resp.send("SUCCESS");
+								
+							}
+						}
+						
+					});
+				};
 			});
 		}
 	});

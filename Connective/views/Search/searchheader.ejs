@@ -20,9 +20,27 @@
 	  padding:4px;
 		border:1px solid #555555;
 		background-color:#ddf3ff;
+		margin:5px;
+		border-radius:5px;
 	}
 	.seen {
 	  background-color:#ffffff;
+	}
+	#connectionNotices {
+		width: 300px;
+		float: right;
+	}
+	.connections {
+		width:16px;
+		height:16px;
+		display:inline-block;
+		background-image:url(images/connectionsIcon.png);
+	}
+	.newConnections {
+	  background-position:0px 0px;
+	}
+	.nonewConnections {
+	  background-position:-16px 0px;
 	}
 </style>
 
@@ -50,10 +68,12 @@
 	  </button>
 	  <a class="navbar-brand" href="#">Project name</a>
 	</div> -->
+	<% if (typeof signedInAs!="undefined") { %>
 	<div class="navbar-header">
 		<a class="navbar-toggle"
-			href='profile?user=<%- userData.username %>'>my profile</a>
+			href='profile?user=<%= signedInAs %>'><%= signedInAs %></a>
 	</div>
+	<% } %>
 	
 	
 	
@@ -111,6 +131,13 @@
 		
 		
 		<button id="searchButton" type="submit" class="btn btn-success">Search for other users</button>
+				<% if (typeof signedInAs!="undefined") { %>
+			<span class="dropdown">
+				<a href="#" class="connections newConnections" data-toggle="dropdown"></a>
+					<ul id="connectionNotices" class="dropdown-menu" style="width:300px">
+					</ul>
+				</span>
+		<% } %>
 		<ul class="nav" style="float:right">
 			<li>
 			<% if (typeof signedInAs!="undefined") { %>
