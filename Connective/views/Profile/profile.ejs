@@ -79,8 +79,9 @@
     <%- include ../Search/searchheader.ejs %>
   
     <span class="title"><%- userData.username %><% if (!isMe) { %><span id="friendReq" title="Request a Connection with <%= userData.username %>"<%
-			var reqNames = userData.requests.map(function(user) { return user.username; });
-			if (userData.buddies.indexOf(signedInAs)>=0 || reqNames.indexOf(signedInAs)>=0) {			
+			var reqNames = userData.requests.map(function(user) { return user.username.toLowerCase(); });
+			var buddies = userData.buddies.map(function(user) { return user.toLowerCase(); });
+			if (buddies.indexOf(signedInAs)>=0 || reqNames.indexOf(signedInAs)>=0) {			
 		%>class="disabled"<% } %>>&nbsp;</span><% } %><span class="reqSent">Request sent</span></span><br />
     <div class="profileLeft">
         <span id="rating">

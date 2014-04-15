@@ -1,0 +1,14 @@
+Homepage
+-----------
+Main page:
+	-A few pixels padding around the logo, so it doesn't blend
+	into the header bar
+
+Signup form issues:
+	-Needs username field
+	-Needs password confirmation
+	-Are we keeping first/last name?
+		-If so, should we auto-detect it using the E-Mail and the RPI Directory API?
+		(https://github.com/jewishdan18/RPI-Directory/wiki/API-Documentation)
+		(see Directory_API_Test.js for sample code for this)
+	-What's the invitation code?
