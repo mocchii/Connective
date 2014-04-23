@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
@@ -16,6 +16,7 @@
     <link href="css/main.css" rel="stylesheet">
     <link href="css/testrun.css" rel="stylesheet">
 
+    <link href="css/forms2.css" rel="stylesheet">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
     
     <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic' rel='stylesheet' type='text/css'>
@@ -25,15 +26,10 @@
     <script type="text/javascript" src="js/smoothscroll.js"></script> 
     <script src="js/Chart.js"></script>
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="assets/js/html5shiv.js"></script>
-      <script src="assets/js/respond.min.js"></script>
-    <![endif]-->
-  </head>
 
+</head>
+<!-- navbar code -->
 <body data-spy="scroll" data-offset="0" data-target="#nav">
-    <!-- navbar code -->
     <nav class="navbar navbar-default" role="navigation">
           <div class="container">
             <div class="navbar-header">
@@ -55,19 +51,29 @@
             </div> <!-- /.navbar-collapse -->
         </div> <!-- /.container -->
     </nav> <!-- /.navbar -->
-    <!-- name display code -->
+<!-- Password changing wrapper -->
 	<div id="headerwrap">
 		<div class="container">
 			<div class="row centered">
 				<div class="col-lg-12">
-					<h1>William T. Kelvin</h1>
-					<h3>kelvin@blacktie.co</h3>
+                    <form role="form" class="col-lg-12 go-right">
+                    
+                        <div class="form-group">
+                            <input id="name" name="name" type="text" class="form-control" required>
+                            <label for="name">Password</label>
+                        </div>
+                        <div class="form-group">
+                            <input id="name" name="name" type="text" class="form-control" required>
+                            <label for="name">Confirm Password</label>
+                        </div>
+                    </form>
+
 				</div><!--/.col-lg-12 -->
 			</div><!--/.row -->
 		</div><!--/.container -->
 	</div><!--/.#headerwrap -->
 	
-    <!-- About user code -->
+<!-- About profile code -->
 	<section id="about" name="about"></section>
 	<div id="intro">
 		<div class="container">
@@ -77,68 +83,64 @@
 					<h5>ABOUT</h5>
 				</div>
 				<div class="col-lg-6">
-					<p>I'm web designer & front-end developer with 7 years of professional experience. I'm interested in all kinds of visual communication, but my major focus is on designing web, mobile & tablet interfaces. I also have skills in other fields like branding, icon design or web development.</p>
+					<form role="form2" class="col-lg-12 go-right">
+                        <div class="form-group">
+                            <textarea id="message" name="phone" class="form-control" required></textarea>
+                            <label for="message">About</label>
+                        </div>
+                        
+                    </form>
 				</div>
 								
 			</div><!--/.row -->
 		</div><!--/.container -->
 	</div><!--/ #intro -->
 
-    <!-- Classes code code -->
+<!-- Adding Classes code -->
 	<section id="resume" name="resume"></section>
+	<!--CLASSES DESCRIPTION -->
 	<div class="container desc">
-        <div class="col-lg-2 col-lg-offset-1">
-            <h5>CLASSES</h5>
-        </div>
-        <div class="col-lg-6">
-            <p><t>OPERATING SYSTEMS</t><br/>
-                Description here <br/>
-                <i>GRADE</i>
-            </p>
-        </div>
-        <div class="col-lg-6 col-lg-offset-3">
-            <p><t>NETWORK PROGRAMMING</t><br/>
-                Description here <br/>
-                <i>GRADE</i>
-            </p>
-        </div>	
+		<div class="row">
+            <div class="col-md-4 col-md-offset-4">
+              <form class="form-horizontal" role="form">
+                <fieldset>
+                  
+                  <!-- Text input-->
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="textinput">Class</label>
+                    <div class="col-sm-12">
+                      <input type="text" placeholder="Class name" class="form-control">
+                    </div>
+                  </div>
+
+                  <!-- Text input-->
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="textinput">Description</label>
+                    <div class="col-sm-12">
+                      <input type="text" placeholder="Description" class="form-control">
+                    </div>
+                  </div>
+                            
+                  <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <div class="pull-right">
+                        <button type="submit" class="btn btn-default">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                      </div>
+                    </div>
+                  </div>
+
+        </fieldset>
+      </form>
+    </div><!-- /.col-lg-12 -->
+</div><!-- /.row -->
 		
 
 
 	</div><!--/.container -->				
-				
-	<section id="contact" name="contact"></section>
-	<!--FOOTER DESCRIPTION -->
-	<div id="footwrap">
-		<div class="container">
-			<div class="row">
-			
-				<div class="col-lg-2 col-lg-offset-1">
-					<h5>CONTACT</h5>
-				</div>
-												
-				<div class="col-lg-6">
-									
-					<!--Start Contact form -->		                                                
-					<form name="enq" method="post" action="email/" onsubmit="return validation();">
-					
-					<fieldset>    
-					<input type="text" name="name" id="name" value="" style="border-radius:5px" class="input-block-level" placeholder="Name" /><br/><br/>
-					<input type="text" name="email" id="email" style="border-radius:5px" value="" class="input-block-level" placeholder="Email" /><br/><br/>
-					<textarea rows="11" cols="80" style="border-radius:5px" name="message" id="message" class="input-block-level" placeholder="Comments"></textarea><br/><br/>
-					<div class="actions">
-					<input type="submit" value="Send Your Message" name="submit" id="submitButton" class="btn btn-info pull    -right" title="Click here to submit your message!" />
-					</div>	
-					</fieldset>
-					
-					</form>  				 
-					<!--End Contact form -->
-					
-				</div>
-			</div><!--/.row -->
-		</div><!--/.container -->
-	</div><!--/ #footer -->
-	
+
+
+<!-- footer code -->
 	<div id="c">
 		<div class="container">
 			<p>Created by Connective</a></p>
