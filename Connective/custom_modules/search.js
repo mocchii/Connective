@@ -1,14 +1,17 @@
 function startSearch(app, User, domain) {
+  app.get("/searchResults", function(req, resp) {
+    resp.redirect("/signin");
+  });
 	app.post("/searchResults", function(req,resp) {
 		
 		/* Make sure this user is signed in */
 		if (!req.session.signedIn) {
-			resp.send("ERROR: You must be signed in to use the search.");
+			resp.redirect("/signin");
 			return;
 		}
 		User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, thisUser) {
 			if (err || thisUser==null) {
-				resp.send("ERROR: You must be signed in to use the search.");
+				resp.redirect("/signin");
 				return;
 			}
 

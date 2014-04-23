@@ -1,5 +1,8 @@
 function startBuddyList(app, User, domain) {
   // Send a connection request
+  app.get("/request", function(req,resp) {
+    resp.redirect("/signin");
+  });
 	app.post("/request", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to request connections.");
@@ -106,29 +109,35 @@ function startProfile(app, User, domain) {
 	startBuddyList(app, User, domain);
 	
 	app.get("/profile", function(req, resp) {
-		var un=req.query.user.toLowerCase();
-		if (un=="") {
-			resp.send("User does not exist");
-		}
-		else {
-			User.findOne({uname_lower:un}, function (err, found) {
-				if (err || found==null) {
-					resp.send("User does not exist.");
-				}
-				else {
-					resp.render("Profile/profile", {
-						session: req.sessionID,
-						userData: found,
-						signedInAs: req.session.uname,
-						isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key)
-					});
-				}
-			});
-		}
+    if (!req.session.signedIn) { resp.redirect("/signin"); }
+    else {
+      var un=req.query.user.toLowerCase();
+      if (un=="") {
+        resp.send("User does not exist");
+      }
+      else {
+        User.findOne({uname_lower:un}, function (err, found) {
+          if (err || found==null) {
+            resp.send("User does not exist.");
+          }
+          else {
+            resp.render("Profile/profile", {
+              session: req.sessionID,
+              userData: found,
+              signedInAs: req.session.uname,
+              isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key)
+            });
+          }
+        });
+      }
+    }
 	});
 
 	/* User manipulation -- adding, removing, changing classes, buddies, ratings, etc. */
 
+  app.get("/deleteClass", function(req,resp) {
+    resp.redirect("/signin");
+  });
 	// Remove class
 	app.post("/deleteClass", function (req, resp) {
 		if (!req.session.signedIn) {
@@ -153,6 +162,10 @@ function startProfile(app, User, domain) {
 			});
 		}
 	});
+  
+  app.get("/addclass", function(req,res) {
+    res.redirect("/signin");
+  });
 
 	// Add class
 	app.post("/addClass", function (req, resp) {
@@ -193,6 +206,10 @@ function startProfile(app, User, domain) {
 		}
 	});
 
+  app.get("/editDesc", function(req,resp) {
+    resp.redirect("/signin");
+  });
+  
 	// Edit class descriptions (self-evaluations)
 	app.post("/editDesc", function (req, resp) {
 		if (!req.session.signedIn) {
@@ -219,6 +236,10 @@ function startProfile(app, User, domain) {
 	});
 
 	// Add user rating (peer evaluation)
+  app.get("/rate", function(req, resp) {
+    resp.redirect("/signin");
+  });
+  
 	app.post("/rate", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to rate students.");

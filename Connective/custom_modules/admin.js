@@ -198,7 +198,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 	});
 
 	app.get("/signin", function(req, resp) {
-		if (req.session.signedin) {
+		if (req.session.signedIn) {
 			resp.redirect("/myProfile");
 		}
 		else {
