@@ -1,5 +1,5 @@
 /* The main Connections (buddies) code */
-function startBuddyList(app, User, domain) {
+function startBuddyList(app, User, Conversation, domain) {
   /* Send a connection request */
   app.get("/request", function(req,resp) {
     resp.redirect("/signin");
@@ -60,16 +60,47 @@ function startBuddyList(app, User, domain) {
               i--;
             }
           }
-					
-					// Space for new notification types to be processed here (i.e. messages)
-					
+				
 					resp.send(JSON.stringify(returnObj));
 				}
 			});
 		}
 	});
 	
-	/* Accept Connection requests */
+/* Get connections and message notifications -- this is only done internally by the app, hence why it only returns JSON. */
+	app.get("/messageNotices", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send('{error: "You must be signed in to check noifications."}');
+		}
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send('{error: "You must be signed in to check notifications."}');
+				}
+				else {
+				  var returnObj={};
+				  returnObj.error="";
+				  var user=me.uname_lower;
+				  Conversation.find( { $or:[ {user1:user}, {user2:user} ] }, function (error, convs) {
+
+					if (error) { returnObj.error=error; }
+					
+					for (var i=0; i<convs.length; i++) {
+					  if ((convs[i].user1==user && convs[i].seen1) || (convs[i].user2==user && convs[i].seen2)) {
+					    convs.splice(i,1);
+						i--;
+					  }
+					}
+					returnObj.messages=convs;
+					resp.send(JSON.stringify(returnObj));
+					
+				  });
+				}
+			});
+		}
+	});
+	
+  /* Accept Connection requests */
   app.get("/accept", function(req, resp) {
     resp.redirect("/signin");
   });
@@ -168,8 +199,8 @@ function startBuddyList(app, User, domain) {
 }
 
 /* Main profil code */
-function startProfile(app, User, domain) {
-	startBuddyList(app, User, domain);
+function startProfile(app, User, Conversation, domain) {
+	startBuddyList(app, User, Conversation, domain);
 	
   /* Render a profile page */
 	app.get("/profile", function(req, resp) {

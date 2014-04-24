@@ -101,6 +101,64 @@ function GetConnections() {
   });
 }
 
+function GetMessages() {
+  $.ajax("messageNotices", {
+    type: "GET",
+	cache:false,
+    complete: function(xhr, stat) {
+      var data=xhr.responseText;
+      if (stat<200 || stat>=300) { alert("Failed"); }
+      else {
+			  var response=JSON.parse(data);
+			  console.log(data);
+				if (response.error!="") {
+					alert("Error: "+response.error);
+				}
+				else {
+					/* Put newer requests at the top */
+					response.messages.sort(function(a,b) {
+						return a.timestamp-b.timestamp;
+					});
+          
+          /* If there are no notifications, show that message */
+					if (response.messages.length<=0) {
+						$(".messages").removeClass("newMessages").addClass("nonewMessages");
+						$("#messageNotices").html("<div class='requestItem'>You have no messages.</div>"); 
+						var a=document.createElement("a");
+						a.href="getConversations";
+						$(a).html("View My Inbox");
+						$(a).css("padding-left","8px");
+						$("#messageNotices").append(a);
+					}
+          
+          /* If there are new notifications, add them to the drop-down list */
+					else {
+						$(".messages").removeClass("nonewMessages").addClass("newMessages");
+						for (i in response.messages) {
+							$("#messageNotices").html("");
+							var req=document.createElement("div");
+							req.className="requestItem";
+							if (response.messages[i].user1==thisUser.toLowerCase()) { theUser=response.messages[i].user2; }
+							else { theUser=response.messages[i].user1; }
+							$(req).html("<a href='getConversations?user="+theUser+"' style='font-weight:bold'>"+theUser+"</a>");
+							$("#messageNotices").append(req);
+						}
+													
+						var a=document.createElement("a");
+						a.href="getConversations";
+						$(a).html("View My Inbox");
+						$(a).css("padding-left","8px");
+						$("#messageNotices").append(a);
+					}
+          
+          /* Update the notifications every 15 seconds */
+					connectionTimer=setTimeout(GetMessages, 15000);
+				}
+			}
+    },
+  });
+}
+
 /* Detect if a pressed key is a number, for validating number-only fields */
 function isNumberKey(evt)
     {
@@ -116,6 +174,7 @@ $(document).ready(function() {
 
   /* Get notificaitons right away */
   GetConnections();
+  GetMessages();
   
   /* Bootstrap stuff */
   $("ul.dropdown-menu").on("click", function(e) {

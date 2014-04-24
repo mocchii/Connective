@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>List of Potential study buddies</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" >
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+  <style type="text/css">
+
+	.ui-autocomplete.ui-menu
+
+	{
+
+	filter: alpha(opacity=1);
+
+	opacity: 1;
+
+	}
+
+  </style>
+
+</head>
+<body style="padding-top:90px">
+
+		
+
+		<%- include searchheader.html %>
+		
+		
+		
+
+		<!-- <div>
+			<a style="visibility:hidden" class="btn btn-default" 
+				href='profile?user=<%- userData.username %>'>Go to my profile</a>
+		</div> -->
+
+		<% var indicesSectionsAndClassNames = [] %>
+
+		<div class="checkbox">
+			<label>
+			  <input type="checkbox" class="checkbox" checked> Only show people in the same section as me in each class
+			</label>
+		</div>
+	
+		<p> Show potential study buddies in each of the following classes: </p>
+		
+		<% for (var i = 0; i < classes.length; i++) {
+			indicesSectionsAndClassNames.push({index:i,
+				section:classes[i].section,className:classes[i].className});
+			%>
+		
+		
+			<div class="checkbox">
+				<label>
+				  <input type="checkbox" id="checkbox-<%-classes[i].className%>@@<%-classes[i].section%>" class="checkbox classCheckbox" checked> <%- classes[i].className %>
+				</label>
+			</div>
+		<% } %>
+		
+	
+
+	<div>
+		 <ul id="placeToPutPeople" class="list-group" style="width:300px;height:500px;overflow:scroll"><!-- use pull-left in class?-->
+		 
+		 <% for (var i=0; i<users.length; i++) { %>
+		 <li class="list-group-item" id="<%-users[i].classAndDescription.className%>@@<%-users[i].classAndDescription.section%>"> 
+		 <a class="btn btn-default" style="color:blue;font-size:16pt" 
+				href="profile?user=<%-users[i].userName%>"> <%- users[i].userName %></a>
+		 <p> 
+			<%- users[i].classAndDescription.code %>-<%- users[i].classAndDescription.section %>: 
+			<%- users[i].classAndDescription.className %> -- <%- users[i].classAndDescription.semester %> 
+		 </p>
+		 <p> <%- users[i].classAndDescription.description %> </p>
+		 </li>
+		 <% } %>
+		 
+		   
+		  
+		</ul>
+    </div>
+	
+	
+	
+	
+	
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="Custom+Bootstrap/js/bootstrap.min.js"></script>
+	
+	
+	<script>
+		$(document).ready(function(){
+		
+			/*$("ul.dropdown-menu").on("click", function(e) {
+				e.stopPropagation();
+			});*/
+		
+			//console.log("thing is" + indicesSectionsAndClassNames);
+		
+			//document.getElementsByClassName("classCheckbox")
+			var listItems = document.getElementsByClassName("list-group-item");
+			
+			
+			
+			
+			$('.classCheckbox').each(function(index){
+				
+				$(this).click(function(){
+					var show = false;
+					if ($(this).is(":checked"))
+						show = true;
+					
+					var id = $(this).attr('id');
+					var classNameAndSection = id.substr(id.indexOf("-")+1);
+					console.log(classNameAndSection);
+					//var className = id.substr(id.indexOf("-")+1, id.indexOf("@@")-id.indexOf("-") );
+					//var section = id.substr(id.indexOf("@@")+2);
+					
+					$('.list-group-item').each(function(){
+						var itemClassAndSection = $(this).attr('id');
+						console.log(itemClassAndSection);
+						if (itemClassAndSection == classNameAndSection)
+						{
+							if (show)
+							{
+								$(this).show();
+								console.log("making something show");
+							}
+							else
+							{
+								$(this).hide();
+								console.log("making something hide");
+							}
+						}
+					});
+				
+				});
+			});
+		
+		});
+	</script>
+</body>
+</html>

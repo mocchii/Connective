@@ -14,14 +14,14 @@
 <!-- Custom CSS for the header -->
 <link rel="stylesheet" href="css/header.css" />
 
-<!-- Bootstrap Javascript and header-specific Javascript -->
-<script type="text/javascript" src="http://twitter-bootstrap.node1.zygote.cc/js/bootstrap-dropdown.js"></script>
-<script type="text/javascript" src="js/headerScripts.js"></script>
-
 <!-- jQuery and custom Bootstrap scripts -->
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script src="Custom Bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Bootstrap Javascript and header-specific Javascript -->
+<script type="text/javascript" src="http://twitter-bootstrap.node1.zygote.cc/js/bootstrap-dropdown.js"></script>
+<script type="text/javascript" src="js/headerScripts.js"></script>
 
 <!-- Nav bar -->
 <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -95,7 +95,12 @@
 				<a href="#" class="connections nonewConnections" data-toggle="dropdown"></a>
 					<ul id="connectionNotices" class="dropdown-menu" style="width:300px">
 					</ul>
-				</span>
+			</span>
+			<span class="dropdown">
+				<a href="#" class="messages nonewMessages" data-toggle="dropdown"></a>
+					<ul id="messageNotices" class="dropdown-menu" style="width:300px">
+					</ul>
+			</span>
 		<% } %>
     
     <!-- Currently signed-in username (link to your profile) and signout link in right-top corner -->

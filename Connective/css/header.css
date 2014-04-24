@@ -23,10 +23,16 @@
   display:inline-block;
   background-image:url(../images/connectionsIcon.png);
 }
-.newConnections {
+.messages {
+  width:16px;
+  height:16px;
+  display:inline-block;
+  background-image:url(../images/messageIcon.png);
+}
+.newConnections, .newMessages {
   background-position:0px 0px;
 }
-.nonewConnections {
+.nonewConnections, .nonewMessages {
   background-position:-16px 0px;
 }
 .signout:hover {

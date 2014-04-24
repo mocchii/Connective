@@ -1,0 +1,329 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Inbox - Connective</title>
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" >
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+   <style type="text/css">
+
+	.ui-autocomplete.ui-menu
+
+	{
+
+	filter: alpha(opacity=1);
+
+	opacity: 1;
+
+	}
+
+  </style>
+
+</head>
+<body style="padding-top:90px">
+
+		
+
+		
+	<%- include Search/searchheader.ejs %>
+		
+
+	
+		
+	<% if (typeof signedInAs == "undefined") { console.log("not logged in should change");  %>
+		<div>You're not logged in</div>
+	<% } else { console.log("if above says 'not logged in', this shouldn't appear"); %>
+	
+	 
+	<p style="display:none" id="secretUsernameContainer"><%- signedInAs %></p>
+	<div style="height:500px">
+	<div style="margin:0px 40px 0px 40px;float:left">
+		<!-- <p style="font-size:14pt;color:#000099">
+			Users to message:
+		</p> -->
+		<form class="form-inline" id="typeUserForm" style="margin-bottom:10px"> <!-- action="/checkIfThisGuyExists" method="post"> -->
+			<input id="userBox" style="width:400px" 
+				type="text" placeholder="Type the name of a user to send a message to" 
+					class="form-control">
+			<button id="searchButton" type="submit" class="btn">Compose</button>
+			<p id="userBoxError" style="color:red;display:none">Unfortunately, a user with that name does not exist</p>
+		</form>
+		 <ul id="placeToPutPeople" class="list-group" 
+			style="width:500px;height:500px;overflow:scroll"><!-- use pull-left in class?-->
+		 
+		 <% 
+		
+		
+
+
+		 for (var i=0; i<convers.length; i++) { 
+			var lastMessageTime = convers[i].messages[convers[i].messages.length-1].timeSent;
+			console.log("lastMessageTime is " + lastMessageTime);
+		 %>
+		 
+		 
+		 <li class="list-group-item personElement" 
+			data-lasttime="<%- lastMessageTime %>" >
+			<%- convers[i].user %>
+			<a class="btn btn-default viewConversation" style="margin:4px"
+				id="<%= convers[i].user %>" 
+				onclick="onClickViewConversation(this)">View Conversation</a></li>
+		 
+		 <% } %>
+		 <!-- <li class="list-group-item" > 
+			<a class="btn btn-default viewConversation" id="AK">View Conversation</a>
+		 </li> -->
+		   
+		  
+		</ul>
+    </div>
+	
+	<div id="sendSide" style="margin:0px 0px 0px 40px;display:none">
+		<ul class="list-inline">
+			<li><form class="form-inline" id="typeUserForm"  > <!-- action="/checkIfThisGuyExists" method="post"> -->
+				<textarea id="messageBox" style="width:400px" 
+					type="text" placeholder="Send message to " 
+						 class="form-control"></textarea>
+				<button id="sendButton" type="submit" class="btn">Send</button>
+			</form></li>
+			<li><button class="btn" style="margin-left:30px"
+						id="refreshButton">get new messages</button></li>
+			
+		</ul>
+		
+		<div style="overflow:scroll;height:500px;width:500px" id="messagesArea">
+		</div>
+	</div>
+	
+	<% } %>
+	</div>
+	
+	
+	
+	
+	<script>thisUser="<%= signedInAs %>";</script>
+	
+	
+	<script>
+		
+		var mostRecentMessageTime = new Date(0);
+		var toUser = "";
+		
+		function addMessages(messages){
+			for (var i = 0; i < messages.length; i++)
+			{
+				$('#messagesArea').prepend("<p><span style='color:blue'>"
+							+ ( ( messages[i].sender == thisUser) ? "You" : messages[i].sender ) + ":  </span>"
+							+ (new Date(Date.parse(messages[i].timeSent))).toLocaleString() + "   -- "
+							+ messages[i].content + "</p>");
+			}
+			//console.log( messages.last );
+			if (messages.length > 0)
+			{
+				mostRecentMessageTime = new Date( Date.parse( messages[messages.length-1].timeSent) );
+				var persons = Array.prototype.slice.call( document.getElementsByClassName("personElement"));
+				
+			}
+		}
+		
+		
+		function onClickViewConversation(item){
+			
+			var username1 = item.id;
+			
+			//console.log("item.dataset.lasttime is  " + item.dataset.lasttime);
+			
+			username1 = username1.toString();
+			
+			console.log("item is " + item.toString());
+			console.log("username is " + username1);
+			
+			toUser = username1;
+			
+			
+			//thisUser = $("#secretUsernameContainer").html().toString().toLowerCase();
+			console.log("thisUser thingie is " + thisUser + " and username is " + username1);
+			
+			
+			// getConversations?user=aj
+			window.location.href = "getConversations?user=" + toUser;
+			
+		}
+		
+		function getNewMessages(){
+		
+			//document.getElementById("messageArea").getChildren
+			/*$("#messageArea").children()
+			.each(function(){
+				if (
+			});*/
+			//$("#messageArea").children().first().attr("
+			
+			//var mostRecentMessageTime;
+			
+			/*$.ajax({type:"GET",url: "/getNewMessages", 
+					data:{user1:thisUser,mostRecentMessageDate:mostRecentMessageTime}, 
+					async: false, success: function(data) {
+					
+					
+			});*/
+			console.log("about to do ajax for getNewMessages");
+			$.ajax({url: "/GetConversationDataForPair", data:{user1:toUser, user2:thisUser}, 
+							async: false, success: function(data) {
+					console.log("data is " + data);
+					console.log("success for ajax for getNewMessages");
+					messages = JSON.parse(data);
+					var numberOfMessagesAlreadyThere = $("#messagesArea").children().length;
+					console.log("numberOfMessagesAlreadyThere is " + numberOfMessagesAlreadyThere);
+					addMessages(messages.slice(numberOfMessagesAlreadyThere));
+					console.log("added MESSAGES");
+			}});
+		}
+		
+		function sortByLastMessageTime(personA, personB){
+			var dateA = new Date(Date.parse(personA.dataset.lasttime));
+			var dateB = new Date(Date.parse(personB.dataset.lasttime));
+			
+			//console.log("dateB > dateA is " + (dateB > dateA) );
+			return dateB > dateA;
+			
+		}
+		
+		function sortThePersonsList(){
+			var personsSorted = Array.prototype.slice.call( document.getElementsByClassName("personElement") )
+									.sort(sortByLastMessageTime);
+			//document.getElementById("placeToPutPeople").inner
+			$("#placeToPutPeople").html("");
+			for (var i = 0; i < personsSorted.length; i++)
+				$("#placeToPutPeople").append(personsSorted[i]);
+		}
+		
+	
+		$(document).ready(function(){
+		
+		
+		
+			sortThePersonsList();
+			
+						query=window.location.search.substring(1);
+			query=query.split("&");
+			params={}
+			for (i=0; i<query.length; i++) {
+			  query[i]=query[i].split("=");
+			  params[unescape(query[i][0])]=unescape(query[i][1]);
+			}
+
+			if (typeof params.user!="undefined" && params.user!="") {
+			    var toUser=params.user.toLowerCase();
+				
+				$.ajax({url: "/GetConversationDataForPair", data:{user1:toUser, user2:thisUser}, 
+								async: false, success: function(data) {
+						console.log("data is " + data);
+						messages = JSON.parse(data);
+						$('#messagesArea').html('');
+						/*for (var i = 0; i < messages.length; i++)
+						{
+							$('#messagesArea').prepend("<p><span style='color:blue'>"
+										+ ( ( messages[i].sender == thisUser) ? "You" : messages[i].sender ) + ":  </span>"
+										+ (new Date(Date.parse(messages[i].timeSent))).toLocaleString() + "   -- "
+										+ messages[i].content + "</p>");
+						}
+						mostRecentMessageTime = new Date( Date.parse( messages[messages.length-1].timeSent) );*/
+						addMessages(messages);
+					}
+				});
+				$('#messageBox').attr('placeholder','Send message to ' + toUser);
+				$('#sendSide').show();
+				GetMessages();
+			}	
+
+		
+			$("#refreshButton").on("click",function(e){
+				e.preventDefault();
+				console.log("hit refresh button");
+				getNewMessages();
+				console.log("done refreshing");
+			});
+		
+			$('#sendButton').on("click",function(e){
+				e.preventDefault();
+				
+				if ($("#messageBox").val() == "")
+					return;
+				
+				getNewMessages();
+			
+				$.ajax({type:"POST",url: "/sendMessage", 
+					data:{userToSendTo:toUser,message:$("#messageBox").val()}, 
+					async: false, success: function(data) {
+					
+							$('#messagesArea').prepend("<p><span style='color:blue'>You: </span>"
+							+ (new Date(Date.now())).toLocaleString() + " -- "
+							+$("#messageBox").val() + "</p>");
+					
+					}
+				});
+				$("#messageBox").val("");
+			
+			});
+			
+			//$('.viewConversation').on("click",onClickViewConversation);
+		
+			$('#typeUserForm').submit(function(event){
+				event.preventDefault();
+				
+				//thisUser = $("#secretUsernameContainer").html().toString().toLowerCase();
+				
+				
+				
+				viewConversationButtons = document.getElementsByClassName("viewConversation");
+				for (var i = 0; i < viewConversationButtons.length; i++)
+				{
+					if (viewConversationButtons[i].id.toLowerCase() == $("#userBox").val().toLowerCase())
+					{
+						onClickViewConversation(viewConversationButtons[i]);
+						return;
+					}
+				}
+				
+				
+				$.ajax({url: "/checkIfUserExists", data:{username:$("#userBox").val()}, 
+							async: false, success: function(data) {
+						
+					
+					data = JSON.parse(data);
+					
+					/*console.log("typeof data is " + (typeof data) )
+					console.log("data is s--" + data + "--e");
+					console.log("data.toString() is " + data.toString());
+					console.log("data.userExists is " + data.userExists);
+					console.log("data['userExists'] is " + data['userExists']);*/
+					var user = $("#userBox").val()
+					if (data.userExists == true)
+					{
+						console.log("user exists");
+						
+						$('#placeToPutPeople').prepend('<li class="list-group-item" >'
+								+user+'<a class="btn btn-default viewConversation" style="margin:4px" '+
+								'id="'+user+'" onclick="onClickViewConversation(this)">View Conversation</a></li>');
+						$("#userBoxError").hide();
+					}
+					else 
+					{
+						console.log("user doesn't exist");
+						$("#userBoxError").show();
+					}
+				}
+				});
+				
+				
+				
+			});
+		
+			//document.getElementsByClassName("classCheckbox")
+			var listItems = document.getElementsByClassName("list-group-item");
+			
+		
+		});
+	</script>
+</body>
+</html>

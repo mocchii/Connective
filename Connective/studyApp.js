@@ -49,6 +49,17 @@ mongoose.connect('mongodb://localhost/chat', function(err){
   }
 });
 
+var conversationSchema = mongoose.Schema({
+	user1:String,
+	user2:String,
+	messages:[{sender:String,timeSent:Date,content:String}],
+	seen1: Boolean,
+	seen2: Boolean,
+	timestamp: Date
+});
+
+var Conversation = mongoose.model("Conversation",conversationSchema);
+
 /* Define the User "table" (template) */
 var userSchema = mongoose.Schema({
   username:String,
@@ -88,9 +99,9 @@ app.use(express.static(__dirname));
 
 /* Main code...all modular */
 admin.startAdmin(app, User, smtp, crypto, domain);
-profile.startProfile(app, User, domain);
+profile.startProfile(app, User, Conversation, domain);
 search.startSearch(app, User, domain);
-messaging.startMessaging(app, User, domain);
+messaging.startMessaging(app, User, Conversation, domain);
 
 /* Getting YACS data */
 app.get("/courses",function(request,response){
