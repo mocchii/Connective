@@ -1,43 +1,27 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>Users who meet these criteria</title>
+  <title>Search Results - Connective</title>
+  
+  <!-- Bootstrap, jQuery, and custom styles -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css" >
   <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
-   <style type="text/css">
-
-	.ui-autocomplete.ui-menu
-
-	{
-
-	filter: alpha(opacity=1);
-
-	opacity: 1;
-
-	}
-
-  </style>
+  <link rel="stylesheet" href="css/search.css" />
 
 </head>
 <body style="padding-top:90px">
 
-		
+  <%- include searchheader.ejs %>
 
-		<%- include searchheader.ejs %>
-		
-		
-
-		<% var indicesSectionsAndClassNames = [] %>
-
-		
-		
-	
+  <% var indicesSectionsAndClassNames = [] %>
 	
 	<div style="margin:0px 0px 0px 40px">
 		<p style="font-size:14pt;color:#000099">
 			Users who meet these criteria:
 		</p>
-		 <ul id="placeToPutPeople" class="list-group" style="width:500px;height:500px;overflow:scroll"><!-- use pull-left in class?-->
+    
+     <!-- Search results -->
+		 <ul id="placeToPutPeople" class="list-group" style="width:500px;height:500px;overflow:scroll"><!-- Maybe add pull-left to this list's class? -->
 		 <% for (var i=0; i<users.length; i++) { %>
 		 <li class="list-group-item">
 		 <a class="btn btn-default" style="color:blue;font-size:16pt" 
@@ -46,10 +30,10 @@
 				if (isNaN(p)) { continue; }
 		%>
 			<p> 
-				<%- users[i].classesAndDescriptions[p].code %>-<%- users[i].classesAndDescriptions[p].section %>: 
-				<%- users[i].classesAndDescriptions[p].className %> -- <%- users[i].classesAndDescriptions[p].semester %> 
+				<%= users[i].classesAndDescriptions[p].code %>-<%= users[i].classesAndDescriptions[p].section %>: 
+				<%= users[i].classesAndDescriptions[p].className %> -- <%= users[i].classesAndDescriptions[p].semester %> 
 			</p>
-			<p> <%- users[i].classesAndDescriptions[p].description %> </p>
+			<p> <%= users[i].classesAndDescriptions[p].description %> </p>
 		<% } %>
 		 </li>
 		 <% } %>

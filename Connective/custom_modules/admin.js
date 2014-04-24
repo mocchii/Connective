@@ -1,5 +1,7 @@
+/* Main administrative code */
 var startAdmin=function(app, User, smtp, crypto, domain) {
-	/* Confirmation of signup */
+	
+  /* Confirmation of signup */
 	app.get("/confirmSignup", function(req, resp) {
 		var query=req.query;
 		User.findOne({username:query.user, password:query.confirmID}, function(error, found) {
@@ -22,7 +24,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				});
 			}
 			
-			/* If everything looks good, confirm the user in the database and then show a message on the confirmation page, including a link to their profile to set up */
+			/* If everything looks good, confirm the user in the database, sign them in on the server, and then show a message on the confirmation page, including a link to their profile to set up */
 			else {
 				found.confirmed=true;
 				found.save();
@@ -43,7 +45,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 	/* Signup processing */
 	app.post("/signup", function(req,res){
 
-		/* Error codes:
+		/* Error codes (bitwise OR'd together for combinations):
 			 |1 = Username issue
 			 |2 = E-Mail issue
 			 |4 = Password issue */
@@ -62,7 +64,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				errorMess+="<li>The username you wanted is already taken. Try another!</li>";
 			}
 			
-			/* Verify matching passwords */
+			/* Verify matching password and password confirmation */
 			if (typeof req.body.pass=="undefined" || typeof req.body.passConf=="undefined" || req.body.pass=="" || req.body.passConf=="") {
 				error|=4;
 				errorMess+="<li>You must enter a password and confirm it, too.</li>";
@@ -104,7 +106,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				var salt=genSalt(8, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_");
 				var sha1=crypto.createHash("sha1");
 				
-				/* Hash algorithm: first 4 of salt, then pass, then last 4 of salt, all sha1'd */
+				/* Hash algorithm: first 4 of salt, then pass, then last 4 of salt, all sha1'd. Shhhh, tell no one! */
 				sha1.update(salt.substr(0, 4)+req.body.pass+salt.substr(4,4));
 				var passHash=sha1.digest("hex");
 				
@@ -134,7 +136,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 
 				smtp.sendMail(message, function(error, resp) {
 					if (error) {
-						console.log("Error: ", error);
+						console.log("Error sending confirmation email: ", error);
 					}
 					else {
 						/* When E-Mail is sent, render the "E-Mail sent, please confirm" page */
@@ -142,7 +144,6 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 							email: req.body.email,
 							signedInAs: req.session.uname
 						});
-						console.log("Message sent: ", resp.message);
 					}
 				});
 			 }
@@ -159,6 +160,8 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 	/* Signin processing */
 	app.post("/signin", function(req, res) {
 		User.findOne({uname_lower:req.body.userName.toLowerCase()}, function(error, found) {
+    
+      /* If the username is nonexistent, render the signin page again with that error */
 			if (found==null) {
 				res.render("Admin/signin", {
 					username: req.body.userName,
@@ -167,6 +170,8 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 					signedInAs: req.session.uname
 				});
 			}
+      
+      /* If the user is registered but not confirmed, render the signin page again with that error */
 			else if (!found.confirmed) {
 				res.render("Admin/signin", {
 					username: req.body.userName,
@@ -179,12 +184,16 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 				var sha1=crypto.createHash("sha1");
 				sha1.update(found.salt.substr(0, 4)+req.body.pass+found.salt.substr(4,4));
 				var passHash=sha1.digest("hex");
+        
+        /* If the password is correct, sign the user in and redirect him/her to his/her profile */
 				if (passHash==found.password) {
 					req.session.signedIn=true;
 					req.session.uname=req.body.userName.toLowerCase();
 					req.session.key=found.password;
 					res.redirect("/profile?user="+found.username);
 				}
+        
+        /* If the password is incorrect, render the signin page again with that error */
 				else {
 					res.render("Admin/signin", {
 						username:req.body.userName,
@@ -197,9 +206,10 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 		});
 	});
 
+  /* Navigating to the signin page redirects you to your profile if you're already signed in */
 	app.get("/signin", function(req, resp) {
 		if (req.session.signedIn) {
-			resp.redirect("/profile");
+			resp.redirect("/profile?user="+req.session.uname);
 		}
 		else {
 			resp.render("Admin/signin", {signedInAs: req.session.uname});

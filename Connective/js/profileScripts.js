@@ -86,6 +86,8 @@ function SetDatas() {
   $(".delete").unbind("click").click(function() {
     var removeWhat=$(this);
     if (!confirm("Are you sure you want to remove this course?")) { return false; }
+    
+    /* Send the request to the server to delete the course */
     $.ajax("deleteClass", {
       type: "POST",
       data: {
@@ -101,18 +103,27 @@ function SetDatas() {
         }
         else {
           var ul, li, lis;
+          /* Find the list item's <li> container */
           li=removeWhat;
           while (li && li.prop("tagName").toLowerCase()!="li") { li=li.parent(); }
+          
+          /* Find the list item's <ul> container--the list itself */
           ul=li;
           while (ul && ul.prop("tagName").toLowerCase()!="ul") { ul=ul.parent(); }
           theID=$(li).children("span").attr("data-id");
+          
+          /* Remove the list item */
           li.remove();
           lis=ul.children("li");
+          
+          /* If there are no courses on the list anymore, display that message */
           if (lis.length<=0) {
             var p=ul.parent();
             ul.remove();
             p.append("None Added");
           }
+          
+          /* Otherwise, renumber all greater IDs to minus one */
           else {
             lis.each(function() {
               var dataChildren=$(this).children("span").each(function() {
@@ -141,6 +152,7 @@ function AddClass() {
 		return false;
 	}
 	
+  /* Send the request to the server to add the class */
   $.ajax("addClass", {
     type: "POST",
     data: {
@@ -189,20 +201,22 @@ function UpdateRating(userData) {
   var ratingFrac = userData.rating - Math.floor(userData.rating);
   $(".star").each(function(ind, star) {
     var i=$(star).attr("data-num")*1.0;
-    if (i<=Math.floor(userData.rating)) {
+    if (i<=Math.floor(userData.rating)) { // If the star is less than the rating in rank, fill it
       $(star).attr("class", "star fullStar");
     } 
-    else if (i<=Math.floor(userData.rating+1) && ratingFrac>0) {
+    else if (i<=Math.floor(userData.rating+1) && ratingFrac>0) { // If it's less than the rating+1 but greater than or equal to the rating, half-fill it
       $(star).attr("class", "star halfStar");
     }
     else {
-      $(star).attr("class", "star noStar");
+      $(star).attr("class", "star noStar"); // Otherwise, empty it
     }
   });
 }
 
 /* Send a rating */
 function SendRating(num) {
+
+  /* Send the request to the server to set the rating */
   $.ajax("rate", {
     type: "POST",
     data: {
@@ -227,7 +241,10 @@ function SendRating(num) {
   });
 }
 
+/* Send a Connection request to a user */
 function SendRequest() {
+
+  /* Send the request for a Connection to the server */
   $.ajax("request", {
     type: "POST",
     data: {
@@ -241,7 +258,7 @@ function SendRequest() {
       }
       else {
 			
-			  /* On success, update the class of the button and show the success message */
+			  /* On success, update the class of the button to gray it out, make it non-functional, and show the success message */
         $("#friendReq").unbind("click").addClass("disabled");
         $(".reqSent").hide().show(200);
       }

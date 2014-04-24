@@ -49,7 +49,7 @@ mongoose.connect('mongodb://localhost/chat', function(err){
   }
 });
 
-/* Define the User table */
+/* Define the User "table" (template) */
 var userSchema = mongoose.Schema({
   username:String,
   uname_lower:String,
@@ -60,19 +60,20 @@ var userSchema = mongoose.Schema({
   classesAndDescriptions:[{
 		className: String, // Class name, like "Foundations of Computer Science"
 		section: String, // Section, as a 0-padded string, like "02"
-		semester: String, // Semester like "Spring 2014"
-		code: String, // Class code like "CSCI 2200"
+		semester: String, // Semester, like "Spring 2014"
+		code: String, // Class code, like "CSCI 2200"
 		description:String // User's self-evaluation in the course
   }],
   buddies: [String],
 	requests: [{
-		username: String,
-		seen: Boolean
+		username: String, // Who the request is from
+		seen: Boolean, // Has it been ignored?
+    timestamp: Date // Datetime it was sent
 	}],
   rating: Number,
   ratingList: [{
-    user: String,
-    rating: Number
+    user: String, // User who made this rating
+    rating: Number // The rating itself
   }]
 });
 
@@ -99,28 +100,34 @@ app.get("/courses",function(request,response){
 /* YACS -- Get all class listings */
 app.get("/allClassListings",function(request,response){
   response.writeHead(200,{"Content-type":"application/json"});
+  
+  /* Get all the listings from the YACS module */
   yacs.getAllClassListings(function(list){
     var classesObject = {classes:[],semesters:[]};
-	if (request.query.excludeSections == "true")
-	{
-		for (var i = 0; i < list.classes.length; i++)
-		{
-			var classWithoutSection = list.classes[i].substr( list.classes[i].indexOf(":")+2);
-			var classWithoutSectionOrSemester = classWithoutSection.substr(0, classWithoutSection.indexOf(" -- "));
-			var semester = classWithoutSection.substr( classWithoutSection.indexOf(" -- ") + 4);
-			if (classesObject.classes.indexOf(classWithoutSectionOrSemester) == -1)
-				classesObject.classes.push(classWithoutSectionOrSemester);
-			if (classesObject.semesters.indexOf(semester) == -1)
-			{
-				console.log(semester);
-				classesObject.semesters.push(semester);
-			}
-		}
-	}
-	else
-		classesObject = list;
+    if (request.query.excludeSections == "true")
+    {
+    
+      /* Process listings */
+      for (var i = 0; i < list.classes.length; i++)
+      {
+        var classWithoutSection = list.classes[i].substr( list.classes[i].indexOf(":")+2);
+        var classWithoutSectionOrSemester = classWithoutSection.substr(0, classWithoutSection.indexOf(" -- "));
+        var semester = classWithoutSection.substr( classWithoutSection.indexOf(" -- ") + 4);
+        if (classesObject.classes.indexOf(classWithoutSectionOrSemester) == -1)
+          classesObject.classes.push(classWithoutSectionOrSemester);
+        if (classesObject.semesters.indexOf(semester) == -1)
+        {
+          console.log(semester);
+          classesObject.semesters.push(semester);
+        }
+      }
+    }
+    else {
+      classesObject = list;
+    }
+    
+    /* Send the listings out */
     response.write(JSON.stringify(classesObject, null, '\t'));
-    //console.log(list);
     response.end();
   });
 });

@@ -1,0 +1,60 @@
+
+.title { font-size:18pt; display: block; }
+.header { font-weight: bold; }
+.className { cursor: pointer; color: #0088ee; }
+.classDesc { position:relative; display: none; padding:4px; border:1px solid #555555; background-color:#ddeeee; }
+.profileLeft { float:left; width:20%; }
+.profileMid { float:left; width:60%; }
+.delete { cursor:pointer; position:relative; top:1px; }
+#addClass { cursor:pointer; color:#0088ee; font-weight:bold;}
+#newClassArea { width:0px; overflow:hidden; display:inline-block; }
+#newClassForm { display:inline; }
+#newClass { width:200px; }
+#myClassList, #myClassList li { width:100%; }
+.courseInfo {
+  font-style: italic;
+  font-weight:bold;
+  font-size:10pt;
+}
+.editButton {
+  background:url(http://battleofthebits.org/data/icons/pencil.png);
+  width:16px;
+  height:16px;
+  position:absolute;
+  right:2px;
+  cursor:pointer;
+}
+.descriptionBox {
+  display:inline;
+}
+.star {
+  width: 16px;
+  height: 16px;
+  display:inline-block;
+  background-image:url(../images/stars.png);
+  cursor:pointer;
+}
+.fullStar {
+  background-position:0px 0px;
+}
+.halfStar {
+  background-position:-16px 0px;
+}
+.noStar {
+  background-position:-32px 0px;
+}
+.thanksRate, .reqSent { font-size:12pt; margin-left:4px; display:none; }
+#friendReq {
+  width:32px;
+  height:16px;
+  display: inline-block;
+  background-image:url(../images/AddConnection.png);
+  cursor:pointer;
+  vertical-align:middle;
+  position:relative;
+  top:-2px;
+}
+#friendReq.disabled {
+  background-position:-32px 0px;
+  cursor:default;
+}

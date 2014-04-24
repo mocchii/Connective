@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title><% if (error==0 || error==2) { %>Account Confirmed<% } else { %>Error Confirming Account<% } %> - Connective</title>
+    <title><% /* Error=2 is "already confirmed" */ if (error==0 || error==2) { %>Account Confirmed<% } else { %>Error Confirming Account<% } %> - Connective</title>
     <style>
       .errorText {
         color:#aa0000;

@@ -1,0 +1,28 @@
+.leftDescriptor {
+  float:left;
+  width: 48%;
+}
+.rightInputs {
+  float:right;
+  width:48%;
+}
+
+.descriptor {
+  height:25px;
+}
+.inputs {
+  height:25px;
+}
+
+.formbox {
+  width:400px;
+}
+
+.error {
+  font-weight:bold;
+  color:#aa0000;
+}
+
+.errorBox {
+  border:1px solid #aa0000;
+}

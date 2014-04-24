@@ -1,37 +1,7 @@
 <html>
   <head>
     <title>Sign Up - Connective</title>
-    <style>
-      .leftDescriptor {
-        float:left;
-        width: 48%;
-      }
-      .rightInputs {
-        float:right;
-        width:48%;
-      }
-      
-      .descriptor {
-        height:25px;
-      }
-      .inputs {
-        height:25px;
-      }
-      
-      .formbox {
-        width:400px;
-      }
-      
-      .error {
-        font-weight:bold;
-        color:#aa0000;
-      }
-      
-      .errorBox {
-        border:1px solid #aa0000;
-      }
-      
-    </style>
+    <link rel="stylesheet" href="css/signin.css" />
   </head>
   <body>
     <% if (typeof errorMsg!="undefined" && errorMsg!="") { %>
@@ -67,19 +37,20 @@
       </div>
       <div class="rightInputs">
         <div class='inputs'>
-          <input type="text" name="userName" <% if (typeof error!="undefined" && (error & 1)>0) { %>class="errorBox"<% } %> value="<% if (typeof username!="undefined") { %><%- username %><% } %>" />
+          <input type="text" name="userName" <% /* Error highlighting */ if (typeof error!="undefined" && (error & 1)>0) { %>class="errorBox"<% } %> value="<% if (typeof username!="undefined") { %><%- username %><% } %>" />
         </div>
         
         <div class='inputs'>
-          <input type="text" name="email" <% if (typeof error!="undefined" && (error & 2)>0) { %>class="errorBox"<% } %> value="<% if (typeof email!="undefined") { %><%- email %><% } %>" />
+          <input type="text" name="email" <% /* Error highlighting */ if (typeof error!="undefined" && (error & 2)>0) { %>class="errorBox"<% } %> value="<% if (typeof email!="undefined") { %><%- email %><% } %>" />
         </div>
         
         <div class='inputs'>
-          <input type="password" name="pass" <% if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
+          <input type="password" name="pass" <% /* Error highlighting */ if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
         </div>
         
         <div class='inputs'>
-          <input type="password" name="passConf" <% if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
+          <!-- Password confirmation -->
+          <input type="password" name="passConf" <% /* Error highlighting */ if (typeof error!="undefined" && (error & 4)>0) { %>class="errorBox"<% } %> value="" />
         </div>
         
       </div>

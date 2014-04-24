@@ -1,5 +1,6 @@
+/* The main Connections (buddies) code */
 function startBuddyList(app, User, domain) {
-  // Send a connection request
+  /* Send a connection request */
   app.get("/request", function(req,resp) {
     resp.redirect("/signin");
   });
@@ -25,7 +26,8 @@ function startBuddyList(app, User, domain) {
 							  resp.send("ERROR: You've already sent this user a connection request.");
 							}
 							else {
-							  found.requests.push({username: me.username, seen: false});
+                /* If all is well, add the new Connections request to the user's "requests list" in the databse */
+							  found.requests.push({username: me.username, seen: false, timestamp: new Date()});
 								found.save();
 								resp.send("{}");
 							}
@@ -36,7 +38,7 @@ function startBuddyList(app, User, domain) {
 		}
 	});
 
-	// Get connections notifications -- this is only done by the app, hence why it only returns JSON.
+	/* Get connections and message notifications -- this is only done internally by the app, hence why it only returns JSON. */
 	app.get("/connectionNotices", function(req, resp) {
 		if (!req.session.signedIn) {
 			resp.send('{error: "You must be signed in to check noifications."}');
@@ -49,8 +51,9 @@ function startBuddyList(app, User, domain) {
 				else {
 				  var returnObj={};
 					returnObj.error="";
-					returnObj.requests=me.requests;
+					returnObj.requests=me.requests; // Add the user's requests to the return object
           
+          /* Remove already-seen (but ignored) requests form the list */
           for (var i=0; i<returnObj.requests.length; i++) {
             if (returnObj.requests[i].seen) {
               returnObj.requests.splice(i, 1);
@@ -58,7 +61,7 @@ function startBuddyList(app, User, domain) {
             }
           }
 					
-					// Space for new notification types to be processed here.
+					// Space for new notification types to be processed here (i.e. messages)
 					
 					resp.send(JSON.stringify(returnObj));
 				}
@@ -66,7 +69,7 @@ function startBuddyList(app, User, domain) {
 		}
 	});
 	
-	// Accept Connection requests
+	/* Accept Connection requests */
   app.get("/accept", function(req, resp) {
     resp.redirect("/signin");
   });
@@ -89,12 +92,16 @@ function startBuddyList(app, User, domain) {
 						}
 						
 						else {
+            
+              /* Create an array of just the usernames who have sent this user a Connection request, and ensure that the person we're accepting is on it */
 							var namemap=me.requests.map(function(user) { return user.username; });
 							var ind=namemap.indexOf(found.username);
 							if (ind<0) {
 								resp.send("ERROR: You have no Connection requests from user "+found.username);
 							}
 							else {
+              
+                /* Remove that request from the requests list, and add the users to each others' buddy lists */
 								me.requests.splice(ind, 1);
 								me.buddies.push(found.username);
 								me.save();
@@ -113,7 +120,7 @@ function startBuddyList(app, User, domain) {
 		}
 	});
 
-	// Accept Connection requests
+	/* Ignore Connection requests */
   app.get("/ignore", function(req, resp) {
     resp.redirect("/signin");
   });
@@ -136,12 +143,15 @@ function startBuddyList(app, User, domain) {
 						}
 						
 						else {
+              /* Create an array of just usernames from the user's requests, and ensure the user we're ignoring is on it */
 							var namemap=me.requests.map(function(user) { return user.username; });
 							var ind=namemap.indexOf(found.username);
 							if (ind<0) {
 								resp.send("ERROR: You have no Connection requests from user "+found.username);
 							}
 							else {
+              
+                /* Mark that request as seen and ignored in the database */
                 me.requests[ind].seen=true;
 								me.save();								
 								resp.send("SUCCESS");
@@ -157,10 +167,11 @@ function startBuddyList(app, User, domain) {
   
 }
 
+/* Main profil code */
 function startProfile(app, User, domain) {
-	/* Profiles */
 	startBuddyList(app, User, domain);
 	
+  /* Render a profile page */
 	app.get("/profile", function(req, resp) {
     if (!req.session.signedIn) { resp.redirect("/signin"); }
     else {
@@ -178,7 +189,7 @@ function startProfile(app, User, domain) {
               session: req.sessionID,
               userData: found,
               signedInAs: req.session.uname,
-              isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key)
+              isMe: (req.session.signedIn && found.uname_lower==req.session.uname && found.password==req.session.key) // Boolean: true if this is the signed-in user's profile
             });
           }
         });
@@ -188,10 +199,10 @@ function startProfile(app, User, domain) {
 
 	/* User manipulation -- adding, removing, changing classes, buddies, ratings, etc. */
 
+  /* Delete a class from your profile */
   app.get("/deleteClass", function(req,resp) {
     resp.redirect("/signin");
   });
-	// Remove class
 	app.post("/deleteClass", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to remove a course.");
@@ -207,6 +218,8 @@ function startProfile(app, User, domain) {
 						resp.send("ERROR: The course you're trying to remove does not exist.");
 					}
 					else {
+          
+            /* Remove the class from the user's classes array in the database */
 						found.classesAndDescriptions.splice(req.body.id,1);
 						found.save();
 						resp.send("SUCCESS");
@@ -216,11 +229,10 @@ function startProfile(app, User, domain) {
 		}
 	});
   
+  /* Add a class to a user's profile */
   app.get("/addclass", function(req,res) {
     res.redirect("/signin");
   });
-
-	// Add class
 	app.post("/addClass", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to add a course.");
@@ -240,6 +252,8 @@ function startProfile(app, User, domain) {
 						}
 					}
 					if (success) {
+          
+            /* Parse the data out of the course name */
 						var rawName=req.body.course;
 						rawName.match(/(.+?) - ([0-9]+): (.+?) -- (.+)/);
 						var classCode=RegExp.$1, section=RegExp.$2, className=RegExp.$3, semester=RegExp.$4;
@@ -250,20 +264,19 @@ function startProfile(app, User, domain) {
 							code: classCode,
 							description:""
 						};
-						found.classesAndDescriptions.push(classObject);
+						found.classesAndDescriptions.push(classObject); // Add the class to the user's course list and save it
 						found.save();
-						resp.send(JSON.stringify(classObject));
+						resp.send(JSON.stringify(classObject)); // Send the parsed object back so it can be processed client-side for displays
 					}
 				}
 			});
 		}
 	});
 
+  /* Edit class descriptions (user self-evaluations in each course) */
   app.get("/editDesc", function(req,resp) {
     resp.redirect("/signin");
   });
-  
-	// Edit class descriptions (self-evaluations)
 	app.post("/editDesc", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to edit a course self-evaluation.");
@@ -279,6 +292,7 @@ function startProfile(app, User, domain) {
 						resp.send("ERROR: The course you're trying to edit does not exist.");
 					}
 					else {
+            /* Update the description in the database, then send the class object back for client-side processing */
 						found.classesAndDescriptions[req.body.id].description=req.body.description;
 						found.save();
 						resp.send(JSON.stringify(found.classesAndDescriptions[req.body.id]));
@@ -288,17 +302,16 @@ function startProfile(app, User, domain) {
 		}
 	});
 
-	// Add user rating (peer evaluation)
+	/* Add user rating (peer evaluation) */
   app.get("/rate", function(req, resp) {
     resp.redirect("/signin");
   });
-  
 	app.post("/rate", function (req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to rate students.");
 		}
 		else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't rate yourself."); }
-		else if (req.body.rating>5 || req.body.rating<1) { resp.send("ERROR: Your rating must be between 1 and 5. No cheating!"); }
+		else if (req.body.rating==null || req.body.rating>5 || req.body.rating<1) { resp.send("ERROR: Your rating must be between 1 and 5. No cheating!"); }
 		else {
 			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, found) {
 				if (err || found==null) {
@@ -330,7 +343,7 @@ function startProfile(app, User, domain) {
 							 /* Recalculate average rating */
 							 found.rating=total/found.ratingList.length;
 							 
-							 /* Save and return */
+							 /* Save to the database and return an object with data about the ratings*/
 							found.save();
 							var returnObj={
 								rating: found.rating,

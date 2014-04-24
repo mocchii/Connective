@@ -1,10 +1,11 @@
+/* The main body of search-related code */
 function startSearch(app, User, domain) {
+
+  /* If someone tries to access the search while not signed in, redirect them to the signin page */
   app.get("/searchResults", function(req, resp) {
     resp.redirect("/signin");
   });
 	app.post("/searchResults", function(req,resp) {
-		
-		/* Make sure this user is signed in */
 		if (!req.session.signedIn) {
 			resp.redirect("/signin");
 			return;
@@ -15,22 +16,21 @@ function startSearch(app, User, domain) {
 				return;
 			}
 
-			/* Set the array to search for only your classes/sections, or the given one, depending on the checkbox */
+			/* Set the array to search for only your classes/sections, or the given one, depending on the checkbox's status */
 			var classes=[];	
 			if (req.body.justRegisteredClasses) {
 				var tempClasses=thisUser.classesAndDescriptions;
-				console.log("There are "+tempClasses.length+" classes");
-				for (var i in tempClasses) {
+				for (var i in tempClasses) {  // Iterate through the user's registered classes and add them to the list of classes to search for
 					if (!isNaN(i)) {
 						classes.push(tempClasses[i].className);
 					}
 				}
 			}
 			else if (req.body.className!=null && req.body.className!="") {
-				classes=[req.body.className];
+				classes=[req.body.className]; // Or just add the entered class name, if supplied
 			}
 			
-			/* Build up the search object with the right class name */
+			/* Build up the search object with the right class names, if any were searched for */
       var searchObj={};
       if (classes.length>0) {
 			searchObj.classesAndDescriptions={
@@ -42,6 +42,7 @@ function startSearch(app, User, domain) {
 				};
 			}
 			
+      /* Add the rating threshold and username, if those were searched for, to our search object */
 			if (req.body.ratingLimit!=null && req.body.ratingLimit!="") {
 				searchObj.rating={
 					$gte: req.body.ratingLimit*1
@@ -57,7 +58,10 @@ function startSearch(app, User, domain) {
 					resp.send("Error: "+err+"<br />JSON: "+JSON.stringify(searchObj));
 					return;
 				}
+        
+        /* Sort results by classes -- Doesn't work as of now */
 				function sortByClass(pair1,pair2) {
+        
 					return 0; // Bypass this for now until we've gotten the details figured out.
 					
 					if (pair1.classAndDescriptions.className > pair2.classAndDescriptions.className)
@@ -71,10 +75,11 @@ function startSearch(app, User, domain) {
 				/* Filter by class section if needed, as well as filtering out nonmatching classes */
 				if (req.body.section!=null && req.body.section!="") {
 					var sect=req.body.section.toString();
-					while (sect.length<2) { sect="0"+sect; }
+					while (sect.length<2) { sect="0"+sect; } // Ensure sections are in the 2-digit 0-padded format
 				}
 				else { var sect=null; }
 				
+        /* Remove class information for irrelevant classes from the resulting users, if a class was searched for */
         if (classes.length>0) {
           for (var i  in allUsers) {
             var theClasses=allUsers[i].classesAndDescriptions;
@@ -88,6 +93,8 @@ function startSearch(app, User, domain) {
                 break;
               }
             }
+            
+            /* Just in case, if the user is NOT in any of the searched-for classes, remove them entirely from the results list */
             if (!isin) {
               allUsers.splice(i, 1);
             }
@@ -96,6 +103,7 @@ function startSearch(app, User, domain) {
 				
 				allUsers.sort(sortByClass);
 				
+        /* And now, render the results page with the search results */
 				resp.render("Search/searchResults", {
 					userData: thisUser,
 					users:allUsers,
