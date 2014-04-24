@@ -26,20 +26,21 @@ function startSearch(app, User, domain) {
 					}
 				}
 			}
-			else {
+			else if (req.body.className!=null && req.body.className!="") {
 				classes=[req.body.className];
 			}
 			
 			/* Build up the search object with the right class name */
-			var searchObj={
-				"classesAndDescriptions": {
+      var searchObj={};
+      if (classes.length>0) {
+			searchObj.classesAndDescriptions={
 					$elemMatch: {
 						"className": {
 							$in: classes
 						}
 					}
-				}
-			};
+				};
+			}
 			
 			if (req.body.ratingLimit!=null && req.body.ratingLimit!="") {
 				searchObj.rating={
@@ -74,22 +75,24 @@ function startSearch(app, User, domain) {
 				}
 				else { var sect=null; }
 				
-				for (var i  in allUsers) {
-					var theClasses=allUsers[i].classesAndDescriptions;
-					var isin=false;
-					for (var c in theClasses) {
-						if (classes.indexOf(theClasses[c].className)<0) {
-							theClasses.splice(c, 1);
-						}
-						else if (sect==null || theClasses[c].section==sect) {
-							isin=true;
-							break;
-						}
-					}
-					if (!isin) {
-						allUsers.splice(i, 1);
-					}
-				}
+        if (classes.length>0) {
+          for (var i  in allUsers) {
+            var theClasses=allUsers[i].classesAndDescriptions;
+            var isin=false;
+            for (var c in theClasses) {
+              if (classes.indexOf(theClasses[c].className)<0) {
+                theClasses.splice(c, 1);
+              }
+              else if (sect==null || theClasses[c].section==sect) {
+                isin=true;
+                break;
+              }
+            }
+            if (!isin) {
+              allUsers.splice(i, 1);
+            }
+          }
+        }
 				
 				allUsers.sort(sortByClass);
 				

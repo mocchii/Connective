@@ -50,6 +50,13 @@ function startBuddyList(app, User, domain) {
 				  var returnObj={};
 					returnObj.error="";
 					returnObj.requests=me.requests;
+          
+          for (var i=0; i<returnObj.requests.length; i++) {
+            if (returnObj.requests[i].seen) {
+              returnObj.requests.splice(i, 1);
+              i--;
+            }
+          }
 					
 					// Space for new notification types to be processed here.
 					
@@ -60,6 +67,9 @@ function startBuddyList(app, User, domain) {
 	});
 	
 	// Accept Connection requests
+  app.get("/accept", function(req, resp) {
+    resp.redirect("/signin");
+  });
 	app.post("/accept", function(req, resp) {
 		if (!req.session.signedIn) {
 			resp.send("ERROR: You must be signed in to accept Connection requests.");
@@ -102,6 +112,49 @@ function startBuddyList(app, User, domain) {
 			});
 		}
 	});
+
+	// Accept Connection requests
+  app.get("/ignore", function(req, resp) {
+    resp.redirect("/signin");
+  });
+	app.post("/ignore", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send("ERROR: You must be signed in to ignore Connection requests.");
+		}
+		else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't ignore a Connection from yourself."); }
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send("ERROR: You must be signed in to ignore Connection requests.");
+				}
+				else {
+					var success=true;
+					var uname=req.body.user.toLowerCase();
+					User.findOne({uname_lower: uname}, function(err, found) {
+						if (err || found==null) {
+							resp.send("ERROR: The user you're trying to ignore a Connection from doesn't exist.");
+						}
+						
+						else {
+							var namemap=me.requests.map(function(user) { return user.username; });
+							var ind=namemap.indexOf(found.username);
+							if (ind<0) {
+								resp.send("ERROR: You have no Connection requests from user "+found.username);
+							}
+							else {
+                me.requests[ind].seen=true;
+								me.save();								
+								resp.send("SUCCESS");
+								
+							}
+						}
+						
+					});
+				};
+			});
+		}
+	});
+  
 }
 
 function startProfile(app, User, domain) {

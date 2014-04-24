@@ -1,4 +1,28 @@
 var connectionTimer=null;
+function IgnoreConnection(username) {
+  $.ajax("ignore", {
+    type: "POST",
+		data: {
+			user:username
+		},
+    complete: function(xhr, stat) {
+      var data=xhr.responseText;
+      if (stat<200 || stat>=300) { alert("Failed to ignore request"); }
+      else {
+			  if (data.substr(0, 7)=="ERROR: ") {
+				  alert(data.substr(7));
+				}
+				else {
+					GetConnections();
+				}
+			}
+    },
+    error: function(xhr, stat, err) {
+      alert("Error: "+err);
+    },
+    xhrFields: { withCredentials: true }
+  });
+}
 function AcceptConnection(username) {
   $.ajax("accept", {
     type: "POST",
@@ -52,7 +76,7 @@ function GetConnections() {
 							if (response.requests[i].seen) {
 								$(req).addClass("seen");
 							}
-							$(req).html("<a href='profile?user="+response.requests[i].username+"' style='font-weight:bold'>"+response.requests[i].username+"</a><a style='float:right; height:20px; background:#E0E0E0; border:1px solid #C0C0C0; border-radius:5px; font-family:Arial; font-size:8pt; padding:4px; vertical-align:middle; cursor:pointer; font-weight:bold' onclick="+'"'+"AcceptConnection('"+response.requests[i].username+"')"+'"'+">Accept</a>");
+							$(req).html("<a href='profile?user="+response.requests[i].username+"' style='font-weight:bold'>"+response.requests[i].username+"</a><a style='cursor:pointer' onclick="+'"'+"IgnoreConnection('"+response.requests[i].username+"')"+'"'+"><img style='float:right; position:relative; top:2px' src='images/deleteIcon.png' /></a><a style='float:right; height:20px; background:#E0E0E0; border:1px solid #C0C0C0; border-radius:5px; font-family:Arial; font-size:8pt; padding:4px; vertical-align:middle; cursor:pointer; font-weight:bold' onclick="+'"'+"AcceptConnection('"+response.requests[i].username+"')"+'"'+">Accept</a>");
 							$("#connectionNotices").append(req);
 						}
 					}

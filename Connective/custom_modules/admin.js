@@ -199,7 +199,7 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 
 	app.get("/signin", function(req, resp) {
 		if (req.session.signedIn) {
-			resp.redirect("/myProfile");
+			resp.redirect("/profile");
 		}
 		else {
 			resp.render("Admin/signin", {signedInAs: req.session.uname});
