@@ -1,10 +1,6 @@
 function startMessaging(app, User, Conversation, domain) {
 
-	
-	
 	app.post("/sendMessage",function(req,resp){
-	
-		console.log("req.body.userToSendTo is " + req.body.userToSendTo);
 		
 		var thisUser1 = req.body.userToSendTo.toLowerCase();
 		if (req.session.uname == null)
@@ -19,9 +15,10 @@ function startMessaging(app, User, Conversation, domain) {
 							{ $and:[{user1:thisUser1}, {user2:thisUser2}] },
 							{ $and:[{user2:thisUser1}, {user1:thisUser2}] }
 						] }, function(err,conversation){
+				//if there is no record of conversation between these two users, add such a conversation
+				// to the database, and add this message
 				if (err || conversation == null)
 				{
-					//resp.write(JSON.stringify([]));
 					var newConversation = new Conversation(
 							{user1:thisUser1, 
 								user2:thisUser2,
@@ -35,7 +32,6 @@ function startMessaging(app, User, Conversation, domain) {
 				}
 				else
 				{
-					console.log("conversation is " + JSON.stringify(conversation));
 					conversation.messages.push({sender:thisUser2,content:req.body.message,timeSent:Date.now()});
 					console.log("messages are now: " + JSON.stringify(conversation.messages));
 					if (conversation.user1==thisUser2) { conversation.seen1=true; conversation.seen2=false; }
@@ -51,19 +47,16 @@ function startMessaging(app, User, Conversation, domain) {
 	
 	});
 	
+	//do a case-insensitive check to see if the 
+	// provided username corresponds to an actual user
 	app.get("/checkIfUserExists",function(req,resp){
-		
-		console.log("in checkIfUserExists, req.query is " +JSON.stringify( req.query) );
-		console.log("in checkIfUserExists, req.body is " + JSON.stringify(req.body) );
 		
 		var username = req.query.username.toLowerCase();
 		
 		User.findOne({uname_lower:username},function(err,user){
 		
-			//console.log("user is " + );
 			if (err || user==null)
 			{
-				//resp.write("no such user");
 				resp.write(JSON.stringify({userExists:false}));
 			}
 			else
@@ -76,10 +69,9 @@ function startMessaging(app, User, Conversation, domain) {
 		
 	});
 	
+	//retrieve the messages sent between these two users, if there are any
 	app.get("/getConversationDataForPair",function(req, resp){
 		
-		//var thisUser1 = req.user1.toLowerCase();
-		//var thisUser2 = req.user2.toLowerCase();
 		var thisUser1 = req.query.user1.toLowerCase();
 		var thisUser2 = req.query.user2.toLowerCase();
 		
@@ -90,7 +82,6 @@ function startMessaging(app, User, Conversation, domain) {
 			function(err,conversation){
 				if (err || conversation == null)
 				{
-					console.log("no conversation data found for pair " + thisUser1 + ", " + thisUser2);
 					resp.write(JSON.stringify([]));
 				}
 				else
@@ -111,18 +102,13 @@ function startMessaging(app, User, Conversation, domain) {
 		if (!req.session.signedIn)
 		{
 			resp.redirect("/signin");
-			return; //for some reason this is necessary
+			return; 
 		}
-		console.log("dude's logged in, apparently");
+		
 		
 		var user = req.session.uname.toLowerCase();
 		Conversation.find( { $or:[ {user1:user}, {user2:user} ] }, 
 			function(err,conversations){
-				/*messages = conversations.messages;
-				for (var i = 0; i < messages.length; i++)
-				{
-					
-				}*/
 				
 				var conversationsToReturn = [];
 				var otherUser;
@@ -133,11 +119,9 @@ function startMessaging(app, User, Conversation, domain) {
 						otherUser = conversation.user2;
 					else otherUser = conversation.user1;
 					
-					
 					conversationsToReturn.push({user: otherUser, messages: conversation.messages});
 				}
 			
-				console.log("req.session.uname is " + req.session.uname);
 				resp.render("messaging",
 					{signedInAs:req.session.uname, convers: conversationsToReturn });
 				return;
