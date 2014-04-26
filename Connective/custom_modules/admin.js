@@ -119,9 +119,11 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 					salt:salt,
 					classesAndDescriptions:[],
 					buddies: [],
-					ratingList: [],
+          requests: [],
+          ratingList: [],
 					rating: -0.1,
-					ratingNum: 0
+          email: req.body.email,
+          allowMail: true
 				});
 				newUser.save();
 				

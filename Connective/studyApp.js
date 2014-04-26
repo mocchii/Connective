@@ -85,7 +85,8 @@ var userSchema = mongoose.Schema({
   ratingList: [{
     user: String, // User who made this rating
     rating: Number // The rating itself
-  }]
+  }],
+  allowMail: Boolean
 });
 
 var User = mongoose.model('User', userSchema);
@@ -99,7 +100,7 @@ app.use(express.static(__dirname));
 
 /* Main code...all modular */
 admin.startAdmin(app, User, smtp, crypto, domain);
-profile.startProfile(app, User, Conversation, domain);
+profile.startProfile(app, User, Conversation, smtp, domain);
 search.startSearch(app, User, domain);
 messaging.startMessaging(app, User, Conversation, domain);
 
