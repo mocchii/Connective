@@ -198,8 +198,8 @@ function startBuddyList(app, User, Conversation, domain) {
   
 }
 
-/* Main profil code */
-function startProfile(app, User, Conversation, domain) {
+/* Main profile code */
+function startProfile(app, User, Conversation, smtp, domain) {
 	startBuddyList(app, User, Conversation, domain);
 	
   /* Render a profile page */
@@ -388,6 +388,82 @@ function startProfile(app, User, Conversation, domain) {
 			});
 		}
 	});
+  
+  /* Send an E-Mail to a user from a user */
+  app.get("/sendmail", function(req, resp) {
+    resp.redirect("/signin");
+  });
+  app.post("/sendmail", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send("ERROR: You must be signed in to E-Mail users.");
+		}
+		else if (req.session.uname==req.body.user.toLowerCase()) { resp.send("ERROR: You can't send an E-Mail to yourself."); }
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send("ERROR: You must be signed in to E-Mail users.");
+				}
+				else {
+					var success=true;
+					var uname=req.body.user.toLowerCase();
+					User.findOne({uname_lower: uname}, function(err, found) {
+						if (err || found==null) {
+							resp.send("ERROR: The user you're trying to E-Mail doesn't exist.");
+						}
+						else if (found.allowMail==false) {
+              resp.send("ERROR: The user you're trying to E-Mail doesn't accept E-Mails from Connective users.");
+            }
+						else {
+            
+                var from=me.email, to=found.email;
+                
+                /* Generate and send E-Mail */
+                var message={
+                  from: me.username+" (Connective) <"+from+">",
+                  replyTo: from,
+                  to: to,
+                  subject: (req.body.subject!="")?req.body.subject:"(No subject)",
+                  text: (req.body.message!="")?req.body.message:"(No message)"
+                };
+
+                smtp.sendMail(message, function(error, res) {
+                  if (error) {
+                    resp.send("ERROR: The E-Mail could not be sent. Please try again. If the problem persists, contact Connective at Connective.Team@gmail.com.");
+                  }
+                  else {
+                    resp.send("SUCCESS");
+                  }
+                });
+								
+							}
+					});
+				};
+			});
+		}
+	});
+  
+  /* Opt in or out of being allowed to receive E-Mails from Connective users */
+  app.get("/toggleMailOK", function(req, resp) {
+    resp.redirect("/signin");
+  });
+  app.post("/toggleMailOK", function(req, resp) {
+		if (!req.session.signedIn) {
+			resp.send("ERROR: You must be signed in to change your E-Mail status.");
+		}
+		else {
+			User.findOne({uname_lower: req.session.uname, password: req.session.key}, function (err, me) {
+				if (err || me==null) {
+					resp.send("ERROR: You must be signed in to change your E-Mail status.");
+				}
+				else {
+          me.allowMail=req.body.optin;
+          me.save();
+          resp.send("SUCCESS");
+				};
+			});
+		}
+	});
+  
 }
 
 module.exports.startProfile=startProfile;

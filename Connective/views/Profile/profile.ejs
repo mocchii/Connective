@@ -76,6 +76,8 @@
     
     <div class="profileMid">
       <% if (isMe) { %>
+        <!-- Opt-in/opt-out of allowing user-to-user E-Mails -->
+        <input type='checkbox' id="emailOpt" <% if (userData.allowMail) { %>checked <% } %>/> <label for="emailOpt">Allow Connective users to E-Mail me</label><br />
         <!-- List of Connections--the "buddy list" of Connective -->
         <b>Connections List</b><br />
         <% if (userData.buddies.length<=0) { %>No Connections--Send some requests!<% } else { %>
@@ -85,7 +87,15 @@
             <% } %>
           </ul>
         <% } %>
-      <% } %>
+      <% } else if (userData.allowMail) { %>
+        <form id="emailform">
+          <b>Send an E-Mail to <%=userData.username %></b><br />
+          <input type="text" id="emailSubject" placeholder="Subject" /><br />
+          <textarea id="emailBody" placeholder="Message" rows=10 cols=50></textarea><br />
+          <input type="submit" value="Send" />
+        </form>
+      <% } else { %>This user does not make their E-Mail address public.<% } %>
+      
     </div>
     
   </body>

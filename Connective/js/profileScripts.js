@@ -237,7 +237,7 @@ function SendRating(num) {
         $(".thanksRate").hide();
         $(".thanksRate").show(200);
       }
-    },
+    }
   });
 }
 
@@ -266,8 +266,63 @@ function SendRequest() {
   });
 }
 
+function EmailToggle() {
+  var okay=document.getElementById("emailOpt").checked;
+  $.ajax("toggleMailOK", {
+    type: "POST",
+    data: {
+      optin: okay
+    },
+    complete: function(xhr, stat) {
+      var data=xhr.responseText;
+      if (stat<200 || stat>=300) {
+        alert("Unable to change E-Mail status.");
+      }
+      else if (data.substr(0,7)=="ERROR: ") {
+        alert(data.substr(7));
+      }
+    },
+  });
+}
+
 /* Initializers */
 $(document).ready(function() {
+
+  /* Setup the E-Mail form */
+  $("#emailOpt").change(EmailToggle);
+  $("#emailform").submit(function() {
+    $("#emailSubject").attr("disabled", true);
+    $("#emailBody").attr("disabled", true);
+    var body=$("#emailBody").val();
+    $("#emailBody").val("Sending...");
+    $.ajax("sendmail", {
+      type: "POST",
+      data: {
+        user: thisUser,
+        subject: $("#emailSubject").val(),
+        message: body
+      },
+      complete: function(xhr, stat) {
+        var data=xhr.responseText;
+        if (stat<200 || stat>=300) {
+          alert("Failed");
+          $("#emailBody").val(body);
+          $("#emailBody").attr("disabled", false);
+          $("#emailSubject").attr("disabled", false);
+        }
+        else if (data.substr(0,7)=="ERROR: ") {
+          alert(data.substr(7));
+          $("#emailBody").val(body);
+          $("#emailBody").attr("disabled", false);
+          $("#emailSubject").attr("disabled", false);
+        }
+        else {
+          $("#emailform").html("Message sent!").hide().show(200);
+        }
+      },
+    });
+    return false;
+  });
   
 	$("#friendReq:not(.disabled)").unbind("click").click(function() {
 		SendRequest();
