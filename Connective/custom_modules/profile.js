@@ -293,7 +293,7 @@ function startProfile(app, User, Conversation, smtp, domain) {
 							section: section,
 							semester: semester,
 							code: classCode,
-							description:""
+							description:req.body.desc
 						};
 						found.classesAndDescriptions.push(classObject); // Add the class to the user's course list and save it
 						found.save();

@@ -1,0 +1,73 @@
+
+    .image{
+        background-image:url(../images/2.jpg);
+        background-size: 100%;
+        background-position: center center;
+        background-repeat: no-repeat;
+        color: #333;
+        height: 500px;
+        text-align: left;
+        margin: 0;
+        background-color:#053147;
+    }
+    .navbar {
+        background-color:#053147;
+        border: none;
+        padding: 0.5em 0;
+        margin-bottom: 0;
+    }
+    .navbar .navbar-brand {
+        color: #FFF;
+        font-family: georgia, serif;
+        font-weight: bold;
+    }
+    .navbar ul.nav li a {
+        color: #fff;
+        padding-left: 0;
+        padding-right: 0;
+        margin: 0 1.5em;
+    }
+    .navbar ul.nav li a:hover {
+        color: #000;
+    }
+.navbar ul.nav li button {
+  margin: 0.7em 0 0 1em;
+}
+ .jumbotron{
+
+  background-image: url(../images/1.jpg);
+  background-size: 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+  color: #333;
+  padding-top: 4em;
+  height: 600px;
+  text-align: left;
+  margin: 0;
+  }
+  .testero{
+  padding-top: 1em;
+  }
+  @media screen and (max-width: 1366px) {
+   .jumbotron {
+    height: 500px;
+    }
+  }
+  @media screen and (max-width: 1200px) {
+   .jumbotron {
+    height: 350px;
+    }
+  }
+  @media screen and (max-width: 768px) {
+   .jumbotron {
+    height: 300px;
+    padding-top: 1em;
+  }
+  }
+  @media screen and (max-width: 480px) {
+  .jumbotron{
+    font-size: 150px;
+    height: 0px;
+    padding-top: 0.1em;
+  }
+  }

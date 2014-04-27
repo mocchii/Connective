@@ -120,7 +120,6 @@ function SetDatas() {
           if (lis.length<=0) {
             var p=ul.parent();
             ul.remove();
-            p.append("None Added");
           }
           
           /* Otherwise, renumber all greater IDs to minus one */
@@ -153,11 +152,14 @@ function AddClass() {
 	}
 	
   /* Send the request to the server to add the class */
+  var theDesc=$("#skills").val();
+  var displayDesc=escape(theDesc).replace(/%(..)/g,"&#x$1;");
   $.ajax("addClass", {
     type: "POST",
     data: {
       user: thisUser,
-      course: $("#newClass").val()
+      course: $("#newClass").val(),
+      desc: theDesc
     },
     complete: function(xhr, stat) {
       var data=xhr.responseText;
@@ -173,7 +175,7 @@ function AddClass() {
         var dataID=$("#myClassList").children().length-1;
         li.innerHTML="<span class='className' data-id='"+dataID+"'>"+response.className+"</span> &nbsp;";
         li.innerHTML+="<span class='delete' data-id='"+dataID+"'><img src='images/deleteIcon.png' /></span>";
-        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton' data-id='"+dataID+"'>&nbsp;</span><span class='courseInfo'>"+response.code+"-"+response.section+" - "+response.semester+"</span><br /><div id='description"+dataID+"' class='descriptionBox'></div></div>";
+        li.innerHTML+="<div class='classDesc' id='classData"+dataID+"'><span class='editButton' data-id='"+dataID+"'>&nbsp;</span><span class='courseInfo'>"+response.code+"-"+response.section+" - "+response.semester+"</span><br /><div id='description"+dataID+"' class='descriptionBox'>"+displayDesc+"</div></div>";
         $(li).attr("data-id", dataID);
 				
 				if (dataID>=0) {
@@ -185,6 +187,7 @@ function AddClass() {
 				
         SetDatas(); // Update the data IDs
         $("#newClass").val(""); // Clear the New Class textbox
+        $("#skills").val("");
         $("#newClassArea").animate({width:'0px'}, 350); // Close the New Class textbox
         $("#addClass").html("Add Course"); // Change the Add Course link's text back from "Add"
         isAdding=false; // Indicate we don't have the Add Course textbox open anymore
@@ -259,8 +262,7 @@ function SendRequest() {
       else {
 			
 			  /* On success, update the class of the button to gray it out, make it non-functional, and show the success message */
-        $("#friendReq").unbind("click").addClass("disabled");
-        $(".reqSent").hide().show(200);
+        $("#friendReq").unbind("click").addClass("btn-disabled").html("Connection Request Sent");
       }
     },
   });
@@ -317,14 +319,16 @@ $(document).ready(function() {
           $("#emailSubject").attr("disabled", false);
         }
         else {
-          $("#emailform").html("Message sent!").hide().show(200);
+          $("#emailBody").val("").attr("disabled", false);
+          $("#emailSubject").val("").attr("disabled", false);
+          $("#emailform").html("<div class='col-sm-10'><p><t>Message sent!</t></p></div>").hide().show(200);
         }
       },
     });
     return false;
   });
   
-	$("#friendReq:not(.disabled)").unbind("click").click(function() {
+	$("#friendReq:not(.btn-disabled)").unbind("click").click(function() {
 		SendRequest();
 	});
 	

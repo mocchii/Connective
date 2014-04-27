@@ -87,12 +87,13 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 			/* If there are errors, show the signup page again, but with the error information */
 			if (error>0) {
 				errorMess+="</ul>";
-				res.render("Admin/signup", {
+				res.render("Admin/index", {
 						errorMsg: errorMess,
 						username: uname,
 						error: error,
 						email: req.body.email,
-						signedInAs: req.session.uname
+						signedInAs: req.session.uname,
+            type: "signup"
 				});
 			 }
 			 
@@ -154,9 +155,15 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 
 	/* Blank signup page before anything's submitted */
 	app.get("/signup", function(req, resp) {
-		resp.render("Admin/signup", {
-			username: ""
-		});
+    if (req.session.signedIn) {
+      resp.redirect("/profile?user="+req.session.uname);
+    }
+    else {
+      resp.render("Admin/index", {
+        username: "",
+        errorMsg:""
+      });
+    }
 	});
 
 	/* Signin processing */
@@ -165,21 +172,23 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
     
       /* If the username is nonexistent, render the signin page again with that error */
 			if (found==null) {
-				res.render("Admin/signin", {
+				res.render("Admin/index", {
 					username: req.body.userName,
 					error: 1,
-					errorText: "There's no account with the username "+req.body.userName+". Did you type it correctly?",
-					signedInAs: req.session.uname
+					errorMsg: "There's no account with the username "+req.body.userName+". Did you type it correctly?",
+					signedInAs: req.session.uname,
+          type:"signin"
 				});
 			}
       
       /* If the user is registered but not confirmed, render the signin page again with that error */
 			else if (!found.confirmed) {
-				res.render("Admin/signin", {
+				res.render("Admin/index", {
 					username: req.body.userName,
 					error:2,
-					errorText: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in.",
-					signedInAs: req.session.uname
+					errorMsg: "This account has not verified its E-Mail address. Please check your RPI E-Mail and confirm your account before you can sign in.",
+					signedInAs: req.session.uname,
+          type:"signin"
 				});
 			}
 			else {
@@ -197,11 +206,12 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
         
         /* If the password is incorrect, render the signin page again with that error */
 				else {
-					res.render("Admin/signin", {
+					res.render("Admin/index", {
 						username:req.body.userName,
 						error:4,
-						errorText: "The password you entered was not corrrect. Make sure capslock is off.",
-						signedInAs: req.session.uname
+						errorMsg: "The password you entered was not corrrect. Make sure capslock is off.",
+						signedInAs: req.session.uname,
+            type: "signin"
 					});
 				}
 			}
@@ -214,14 +224,14 @@ var startAdmin=function(app, User, smtp, crypto, domain) {
 			resp.redirect("/profile?user="+req.session.uname);
 		}
 		else {
-			resp.render("Admin/signin", {signedInAs: req.session.uname});
+			resp.render("Admin/index", {signedInAs: req.session.uname});
 		}
 	});
 
 	/* Signing out */
 	app.get("/signout", function(req, resp) {
 		req.session.destroy();
-		resp.render("Admin/signin");
+		resp.redirect("/");
 	});
 }
 module.exports.startAdmin=startAdmin;
