@@ -168,15 +168,16 @@
 				</div>
         
         <% if (userData.buddies.length<=0) { %><div class="col-lg-6">
-          <p><t>No Connections--Send <% if (!isMe) { %>them a request!<% } else { %>some requests!<% } %></t><br />
+        <p><t>No Connections--Send <% if (!isMe) { %>them a request!<% } else { %>some requests!<% } %></t><br />
           </p> 
         </div><% } else { %>
-          <% for (var i=0; i<userData.buddies.length; ++i) { %>
           <div class="col-lg-6">
+          <% for (var i=0; i<userData.buddies.length; ++i) { %>
             <p><t><a href="profile?user=<%= userData.buddies[i] %>"><%= userData.buddies[i] %></a></t><br />
             </p>
-          </div>           
-          <% }} %>
+          <% } %>
+          </div>
+          <% } %>
         
 				<!--<div class="col-lg-6">
 					<p><t>KEVIN SOMETHING</t><br/>

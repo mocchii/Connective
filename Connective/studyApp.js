@@ -19,7 +19,7 @@ app.use(express.bodyParser());
 app.set('view engine', 'ejs');
 
 /* Setup the information for the E-Mail system */
-var domain="http://127.0.0.1";
+var domain="http://connective.uni.me";
 var smtp = mailer.createTransport("SMTP", {
     service: "Gmail",
     auth: {
@@ -93,6 +93,7 @@ var User = mongoose.model('User', userSchema);
 
 /* Static file requests */
 app.get('/', function(req,res){  
+  res.redirect("signup");
   res.redirect("signup");
 });
 
